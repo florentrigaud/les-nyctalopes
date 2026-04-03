@@ -1,0 +1,66 @@
+:root {
+  --bg-dark: #1a1a1a;
+  --bg-light: #f0f0f0;
+  --accent: #d4af37;
+  --text: #f0f0f0;
+  --border: 2px solid var(--accent);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: 'calibri', cursive;
+  background-color: var(--bg-dark);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+  background-size: cover;
+}
+
+header, footer {
+  background-color: var(--bg-dark);
+  padding: 1rem;
+  text-align: center;
+  border: var(--border);
+  border-radius: 8px;
+  margin: 1rem;
+}
+
+.fiche-card {
+  background-color: rgba(26, 26, 26, 0.8);
+  border: var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s;
+}
+
+.fiche-card:hover {
+  transform: translateY(-5px);
+}
+
+button {
+  background-color: var(--accent);
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin: 0.5rem;
+  font-family: 'UnifrakturMaguntia', cursive;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+input, select {
+  background-color: var(--bg-light);
+  color: var(--bg-dark);
+  border: var(--border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  width: 100%;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Les Nyctalops - Admin</title>
+  <link rel="stylesheet" href="src/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Les Nyctalops - Admin</h1>
+    <nav>
+      <a href="index.html">Retour</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Admin Dashboard</h2>
+    <section id="users-validation">
+      <h3>Utilisateurs en attente de validation</h3>
+      <table>
+        <thead>
+          <tr><th>Email</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="users-list"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Les Nyctalops - Un projet JDR Pathfinder</p>
+  </footer>
+
+  <script type="module" src="src/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Les Nyctalops - Mes fiches</title>
+  <link rel="stylesheet" href="src/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Les Nyctalops</h1>
+    <nav>
+      <a href="index.html">Mes fiches</a>
+      <a href="admin.html">Admin</a>
+      <button id="signOutBtn">Déconnexion</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="auth-section">
+      <h2>Connexion</h2>
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Mot de passe" required />
+        <button type="submit">Se connecter</button>
+      </form>
+    </section>
+
+    <section id="fiches-list" style="display: none;">
+      <!-- Les fiches seront chargées ici -->
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Les Nyctalops - Un projet JDR Pathfinder</p>
+  </footer>
+
+  <script type="module" src="src/js/auth.js"></script>
+  <script type="module" src="src/js/data.js"></script>
+  <script type="module" src="src/js/utils.js"></script>
+  <script type="module" src="src/js/ui.js"></script>
+</body>
+</html>
