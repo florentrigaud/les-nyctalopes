@@ -28,7 +28,33 @@
         <button type="submit">Se connecter</button>
       </form>
     </section>
+    <section id="auth-section">
+  <h2 id="auth-title">Connexion</h2>
+  
+  <!-- Toggle -->
+  <div id="auth-toggle">
+    <button id="btnLogin" class="active">Se connecter</button>
+    <button id="btnRegister">Créer un compte</button>
+  </div>
 
+  <!-- Formulaire Connexion -->
+  <form id="login-form">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Mot de passe" required />
+    <button type="submit">Se connecter</button>
+  </form>
+
+  <!-- Formulaire Inscription -->
+  <form id="register-form" style="display: none;">
+    <input type="text" id="reg-username" placeholder="Nom d'utilisateur" required />
+    <input type="email" id="reg-email" placeholder="Email" required />
+    <input type="password" id="reg-password" placeholder="Mot de passe" required />
+    <input type="password" id="reg-confirm" placeholder="Confirmer le mot de passe" required />
+    <button type="submit">Créer mon compte</button>
+  </form>
+
+  <p id="auth-message"></p>
+</section>
     <section id="fiches-list" style="display: none;">
       <!-- Les fiches seront chargées ici -->
     </section>
