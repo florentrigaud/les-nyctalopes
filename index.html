@@ -4,54 +4,69 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Les Nyctalopes - Mes fiches</title>
-  <!-- Police fantasy -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
-  <!-- Style CSS -->
   <link rel="stylesheet" href="src/css/style.css">
 </head>
 <body>
-  <!-- Contenu dynamique (en-tête et pied de page chargés par JS) -->
   <div id="header-placeholder"></div>
+
   <main>
-    <!-- Section Connexion -->
     <section id="auth-section">
-      <h2>Connexion</h2>
+
+      <!-- Boutons bascule -->
+      <div id="auth-toggle">
+        <button id="btn-show-login" class="active">Se connecter</button>
+        <button id="btn-show-register">Créer un compte</button>
+      </div>
+
+      <!-- Formulaire Connexion -->
       <form id="login-form">
-        <input type="email" id="email" placeholder="Email" required />
-        <input type="password" id="password" placeholder="Mot de passe" required />
+        <h2>Connexion</h2>
+        <input type="email" id="login-email" placeholder="Email" required />
+        <input type="password" id="login-password" placeholder="Mot de passe" required />
         <button type="submit">Se connecter</button>
       </form>
+
+      <!-- Formulaire Inscription (caché par défaut) -->
+      <form id="register-form" style="display:none;">
+        <h2>Créer un compte</h2>
+        <input type="email" id="register-email" placeholder="Email" required />
+        <input type="password" id="register-password" placeholder="Mot de passe" required />
+        <input type="password" id="register-confirm" placeholder="Confirmer le mot de passe" required />
+        <button type="submit">S'inscrire</button>
+      </form>
+
+      <!-- Message de retour (erreur / succès) -->
+      <p id="auth-message"></p>
+
     </section>
-    <!-- Section Liste des fiches (cachée au départ) -->
+
     <section id="fiches-list" style="display: none;">
       <!-- Les fiches seront chargées ici -->
     </section>
   </main>
+
   <div id="footer-placeholder"></div>
 
-  <!-- Variables d'environnement Supabase (à remplacer par tes vraies valeurs) -->
+  <!-- Variables Supabase -->
   <script>
-    window.SUPABASE_URL = "https://vlkiigbekxpbcwqhkkma.supabase.co";
-    window.SUPABASE_KEY = "sb_publishable_CIafolW53uZ-s6XP1duTKA_SFRATTKA";
+    window.SUPABASE_URL = "REMPLACE_PAR_TON_URL_SUPABASE";
+    window.SUPABASE_KEY = "REMPLACE_PAR_TA_CLE_SUPABASE";
   </script>
 
-  <!-- SDK Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-  <!-- Chargement des templates header/footer -->
   <script>
     fetch('src/templates/header.html')
-      .then(response => response.text())
+      .then(r => r.text())
       .then(html => document.getElementById('header-placeholder').innerHTML = html);
-
     fetch('src/templates/footer.html')
-      .then(response => response.text())
+      .then(r => r.text())
       .then(html => document.getElementById('footer-placeholder').innerHTML = html);
   </script>
 
-  <!-- Scripts en mode module (nécessaire pour les import/export ES6) -->
   <script type="module" src="src/js/ui.js"></script>
 </body>
 </html>
