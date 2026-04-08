@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Les Nyctalops - Admin</title>
+  <title>Les Nyctalopes - Admin</title>
   <link rel="stylesheet" href="src/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,9 +11,9 @@
 </head>
 <body>
   <header>
-    <h1>Les Nyctalops - Admin</h1>
+    <h1>Les Nyctalopes - Admin</h1>
     <nav>
-      <a href="index.html">Retour</a>
+      <a href="/index.html">Retour</a>
     </nav>
   </header>
 
@@ -31,8 +31,17 @@
   </main>
 
   <footer>
-    <p>© 2026 Les Nyctalops - Un projet JDR Pathfinder</p>
+    <p>© 2026 Les Nyctalopes - Un projet JDR Pathfinder</p>
   </footer>
+
+  <!-- Variables d'environnement Supabase (à remplacer par tes vraies valeurs) -->
+  <script>
+    window.SUPABASE_URL = "REMPLACE_PAR_TON_URL_SUPABASE";
+    window.SUPABASE_KEY = "REMPLACE_PAR_TA_CLE_SUPABASE";
+  </script>
+
+  <!-- SDK Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="module" src="src/js/admin.js"></script>
 </body>

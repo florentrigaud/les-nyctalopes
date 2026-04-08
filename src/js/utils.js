@@ -3,6 +3,9 @@ export function openWiki(element) {
   window.open(wikiUrl, '_blank');
 }
 
-export function calculerPV(forValue, conValue, niveau) {
-  return Math.floor((forValue + conValue) / 2) + niveau * 2;
+// Calcul des PV selon les règles Pathfinder :
+// dé de vie de la classe (passé en paramètre) + modificateur de Constitution * niveau
+export function calculerPV(deVie, conValue, niveau) {
+  const modCon = Math.floor((conValue - 10) / 2);
+  return deVie + modCon * niveau;
 }

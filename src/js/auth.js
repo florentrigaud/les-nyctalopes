@@ -1,8 +1,11 @@
-// Initialiser Supabase (sans module)
+// Initialiser Supabase
+// Les variables sont définies dans index.html / admin.html via window.SUPABASE_URL et window.SUPABASE_KEY
 const supabase = window.supabase.createClient(
-  import.meta.env?.SUPABASE_URL || window.env?.SUPABASE_URL || '',
-  import.meta.env?.SUPABASE_KEY || window.env?.SUPABASE_KEY || ''
+  window.SUPABASE_URL || '',
+  window.SUPABASE_KEY || ''
 );
+
+export { supabase };
 
 // Fonctions d'authentification
 export async function signIn(email, password) {
@@ -18,6 +21,6 @@ export async function signOut() {
 
 export async function getCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw new Error(error.message);
+  if (error) return null; // Pas d'erreur si simplement non connecté
   return user;
 }

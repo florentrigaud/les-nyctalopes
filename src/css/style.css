@@ -8,7 +8,7 @@
 }
 
 body {
-  font-family: 'calibri', cursive;
+  font-family: 'Calibri', 'Segoe UI', sans-serif; /* Fallback web-safe ajouté */
   background-color: var(--bg-dark);
   color: var(--text);
   margin: 0;
@@ -64,6 +64,7 @@ input, select {
   margin: 0.5rem 0;
   width: 100%;
 }
+
 #auth-toggle {
   display: flex;
   gap: 10px;
@@ -81,7 +82,7 @@ input, select {
 
 #auth-toggle button.active {
   opacity: 1;
-  border-bottom: 2px solid var(--couleur-principale);
+  border-bottom: 2px solid var(--accent); /* Correction : --couleur-principale → --accent */
   font-weight: bold;
 }
 

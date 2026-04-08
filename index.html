@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Les Nyctalops - Mes fiches</title>
+  <title>Les Nyctalopes - Mes fiches</title>
   <!-- Police fantasy -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,10 +31,17 @@
   </main>
   <div id="footer-placeholder"></div>
 
-  <!-- Scripts (chargeables même sans module) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Variables d'environnement Supabase (à remplacer par tes vraies valeurs) -->
   <script>
-    // Remplace les placeholders par les vrais éléments
+    window.SUPABASE_URL = "https://vlkiigbekxpbcwqhkkma.supabase.co";
+    window.SUPABASE_KEY = "sb_publishable_CIafolW53uZ-s6XP1duTKA_SFRATTKA";
+  </script>
+
+  <!-- SDK Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <!-- Chargement des templates header/footer -->
+  <script>
     fetch('src/templates/header.html')
       .then(response => response.text())
       .then(html => document.getElementById('header-placeholder').innerHTML = html);
@@ -43,9 +50,8 @@
       .then(response => response.text())
       .then(html => document.getElementById('footer-placeholder').innerHTML = html);
   </script>
-  <script src="src/js/auth.js"></script>
-  <script src="src/js/data.js"></script>
-  <script src="src/js/utils.js"></script>
-  <script src="src/js/ui.js"></script>
+
+  <!-- Scripts en mode module (nécessaire pour les import/export ES6) -->
+  <script type="module" src="src/js/ui.js"></script>
 </body>
 </html>
