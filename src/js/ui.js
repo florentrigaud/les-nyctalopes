@@ -18,5 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
       container.appendChild(div);
     });
+    container.style.display = 'block';
   }
 });
