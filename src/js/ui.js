@@ -1,7 +1,6 @@
-import { loadFiches } from './data.js';
+import { loadFiches, createFiche } from './data.js';
 import { getCurrentUser, signIn, signUp, signOut } from './auth.js';
 import { openWiki } from './utils.js';
-import { loadFiches, createFiche } from './data.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await getCurrentUser();
@@ -81,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // --- Affichage des fiches si connecté ---
-// --- Affichage des fiches si connecté ---
   if (user) {
     document.getElementById('auth-section').style.display = 'none';
 
@@ -122,10 +120,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (e.target.id === 'btn-submit-fiche') {
-        const nom = document.getElementById('fiche-nom').value.trim();
-        const race = document.getElementById('fiche-race').value.trim();
+        const nom    = document.getElementById('fiche-nom').value.trim();
+        const race   = document.getElementById('fiche-race').value.trim();
         const classe = document.getElementById('fiche-classe').value.trim();
-        const msg = document.getElementById('fiche-message');
+        const msg    = document.getElementById('fiche-message');
 
         if (!nom) {
           msg.textContent = '❌ Le nom est obligatoire.';
@@ -147,8 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charger et afficher les fiches existantes
     const fiches = await loadFiches(user.id);
-    container.style.display = 'block';  // ← déplace cette ligne ici
-    
     fiches.forEach(fiche => {
       const div = document.createElement('div');
       div.className = 'fiche-card';
@@ -172,5 +168,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       div.appendChild(btn);
       container.insertBefore(div, btnCreer);
     });
-  }  // ← fermeture du if (user)
-});  // ← fermeture du DOMContentLoaded
+  }
+});
