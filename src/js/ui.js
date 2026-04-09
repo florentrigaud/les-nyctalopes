@@ -1,6 +1,7 @@
 import { loadFiches } from './data.js';
 import { getCurrentUser, signIn, signUp, signOut } from './auth.js';
 import { openWiki } from './utils.js';
+import { loadFiches, createFiche } from './data.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await getCurrentUser();
@@ -80,12 +81,74 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // --- Affichage des fiches si connecté ---
+// --- Affichage des fiches si connecté ---
   if (user) {
     document.getElementById('auth-section').style.display = 'none';
 
-    const fiches = await loadFiches(user.id);
     const container = document.getElementById('fiches-list');
+    container.style.display = 'block';
 
+    // Bouton créer une fiche
+    const btnCreer = document.createElement('button');
+    btnCreer.textContent = '+ Créer une fiche';
+    btnCreer.id = 'btn-creer-fiche';
+    container.appendChild(btnCreer);
+
+    // Formulaire de création (caché par défaut)
+    const formCreer = document.createElement('div');
+    formCreer.id = 'form-creer-fiche';
+    formCreer.style.display = 'none';
+    formCreer.innerHTML = `
+      <h3>Nouvelle fiche</h3>
+      <input type="text" id="fiche-nom" placeholder="Nom du personnage" required />
+      <input type="text" id="fiche-race" placeholder="Race" />
+      <input type="text" id="fiche-classe" placeholder="Classe" />
+      <button id="btn-submit-fiche">Créer</button>
+      <button id="btn-annuler-fiche">Annuler</button>
+      <p id="fiche-message"></p>
+    `;
+    container.appendChild(formCreer);
+
+    // Afficher/cacher le formulaire
+    btnCreer.addEventListener('click', () => {
+      formCreer.style.display = 'block';
+      btnCreer.style.display = 'none';
+    });
+
+    document.addEventListener('click', async (e) => {
+      if (e.target.id === 'btn-annuler-fiche') {
+        formCreer.style.display = 'none';
+        btnCreer.style.display = 'block';
+      }
+
+      if (e.target.id === 'btn-submit-fiche') {
+        const nom = document.getElementById('fiche-nom').value.trim();
+        const race = document.getElementById('fiche-race').value.trim();
+        const classe = document.getElementById('fiche-classe').value.trim();
+        const msg = document.getElementById('fiche-message');
+
+        if (!nom) {
+          msg.textContent = '❌ Le nom est obligatoire.';
+          msg.style.color = '#e74c3c';
+          return;
+        }
+
+        try {
+          await createFiche({ user_id: user.id, nom, race_id: race, classe_id: classe });
+          msg.textContent = '✅ Fiche créée !';
+          msg.style.color = '#2ecc71';
+          setTimeout(() => location.reload(), 1000);
+        } catch (err) {
+          msg.textContent = '❌ ' + err.message;
+          msg.style.color = '#e74c3c';
+        }
+      }
+    });
+
+    // Charger et afficher les fiches existantes
+    const fiches = await loadFiches(user.id);
+    container.style.display = 'block';  // ← déplace cette ligne ici
+    
     fiches.forEach(fiche => {
       const div = document.createElement('div');
       div.className = 'fiche-card';
@@ -107,9 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       div.appendChild(pRace);
       div.appendChild(pClasse);
       div.appendChild(btn);
-      container.appendChild(div);
+      container.insertBefore(div, btnCreer);
     });
-
-    container.style.display = 'block';
-  }
-});
+  }  // ← fermeture du if (user)
+});  // ← fermeture du DOMContentLoaded
