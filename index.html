@@ -1,72 +1,878 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Les Nyctalopes - Mes fiches</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les Nyctalopes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --bg:#06070f; --bg2:#0c0e1a; --bg3:#111426;
+  --panel:#151830; --panel2:#1b1f3a; --panel3:#1f2445;
+  --border:#252a50; --border2:#3a4275; --border3:#505caa;
+  --gold:#c9a227; --gold2:#e8c84a; --gold3:#f5d878;
+  --golddim:rgba(201,162,39,0.15); --goldbright:rgba(201,162,39,0.35);
+  --red:#c0392b; --red2:#e05050; --redbg:rgba(192,57,43,0.12);
+  --blue:#2980b9; --blue2:#5dade2; --bluebg:rgba(41,128,185,0.12);
+  --green:#27ae60; --green2:#52be80; --greenbg:rgba(39,174,96,0.12);
+  --purple:#8e44ad; --purple2:#bb8fce; --purplebg:rgba(142,68,173,0.12);
+  --amber:#d68910; --amberbg:rgba(214,137,16,0.12);
+  --text:#c5cae9; --textdim:#6272a4; --textgold:#e0c870; --textfaint:#3a4275;
+  --ff:'Cinzel',serif; --ffd:'Cinzel Decorative',serif;
+  --ffs:'Crimson Text',serif; --ffm:'JetBrains Mono',monospace;
+  --radius:2px; --shadow:0 4px 24px rgba(0,0,0,0.6);
+}
+
+body { background:var(--bg); color:var(--text); font-family:var(--ffs); font-size:1rem; line-height:1.7; min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background: radial-gradient(ellipse 60% 40% at 15% 20%,rgba(201,162,39,0.04) 0%,transparent 70%), radial-gradient(ellipse 50% 50% at 85% 75%,rgba(41,128,185,0.04) 0%,transparent 70%); }
+body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(37,42,80,0.3) 1px,transparent 1px),linear-gradient(90deg,rgba(37,42,80,0.3) 1px,transparent 1px); background-size:80px 80px; mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 80%); }
+
+/* ===== AUTH SCREEN ===== */
+#auth-screen {
+  position:fixed; inset:0; z-index:999;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--bg);
+}
+.auth-box {
+  background:var(--panel); border:1px solid var(--border);
+  border-top:3px solid var(--gold);
+  padding:2.5rem 2rem; width:100%; max-width:400px;
+  position:relative; z-index:1;
+}
+.auth-title { font-family:var(--ffd); font-size:1.4rem; color:var(--textgold); text-align:center; margin-bottom:0.3rem; }
+.auth-sub { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); text-align:center; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:1.8rem; }
+.auth-tabs { display:flex; gap:0.25rem; margin-bottom:1.5rem; }
+.auth-tab { flex:1; font-family:var(--ffm); font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.5rem; background:transparent; color:var(--textdim); border:1px solid var(--border); cursor:pointer; transition:all 0.2s; }
+.auth-tab.active { color:var(--gold); border-color:var(--gold); background:var(--golddim); }
+.auth-group { margin-bottom:1rem; }
+.auth-label { font-family:var(--ffm); font-size:0.58rem; color:var(--textdim); letter-spacing:0.15em; text-transform:uppercase; display:block; margin-bottom:0.4rem; }
+.auth-input { width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:0.65rem 0.85rem; font-family:var(--ffs); font-size:0.95rem; outline:none; transition:border-color 0.2s; }
+.auth-input:focus { border-color:var(--gold); }
+.auth-btn { width:100%; font-family:var(--ff); font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.85rem; background:var(--gold); color:#06070f; border:none; cursor:pointer; margin-top:0.5rem; transition:all 0.2s; }
+.auth-btn:hover { background:var(--gold2); }
+.auth-msg { font-family:var(--ffm); font-size:0.68rem; margin-top:0.8rem; text-align:center; min-height:1.2rem; }
+
+/* ===== TOPBAR ===== */
+.topbar { position:sticky; top:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:0 2rem; height:60px; background:rgba(6,7,15,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+.topbar-brand { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+.topbar-emblem { width:36px; height:36px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:var(--gold); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); background:var(--golddim); }
+.topbar-name { font-family:var(--ff); font-size:0.95rem; font-weight:700; color:var(--textgold); letter-spacing:0.12em; }
+.topbar-name span { display:block; font-size:0.55rem; font-weight:400; color:var(--textdim); letter-spacing:0.25em; font-family:var(--ffm); margin-top:1px; }
+.topbar-nav { display:flex; gap:0.15rem; list-style:none; }
+.topbar-nav li button { font-family:var(--ffm); font-size:0.65rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--textdim); padding:0.4rem 0.9rem; border:1px solid transparent; background:transparent; cursor:pointer; transition:all 0.2s; }
+.topbar-nav li button:hover { color:var(--text); border-color:var(--border); }
+.topbar-nav li button.active { color:var(--gold); border-color:var(--gold); background:var(--golddim); }
+.topbar-user { display:flex; align-items:center; gap:0.8rem; }
+.topbar-email { font-family:var(--ffm); font-size:0.58rem; color:var(--textdim); letter-spacing:0.1em; }
+.topbar-signout { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--red2); background:transparent; border:1px solid var(--red); padding:0.3rem 0.7rem; cursor:pointer; transition:all 0.2s; }
+.topbar-signout:hover { background:var(--redbg); }
+
+/* ===== LAYOUT ===== */
+.app-layout { display:grid; grid-template-columns:260px 1fr; min-height:calc(100vh - 60px); position:relative; z-index:1; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:1.5rem 1rem; display:flex; flex-direction:column; gap:1.2rem; position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto; }
+.sidebar-section-title { font-family:var(--ffm); font-size:0.58rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--textdim); padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+.char-list { display:flex; flex-direction:column; gap:0.4rem; }
+.char-card { padding:0.8rem 0.9rem; background:var(--panel); border:1px solid var(--border); cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+.char-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--border2); transition:background 0.2s; }
+.char-card:hover { border-color:var(--border2); background:var(--panel2); }
+.char-card:hover::before { background:var(--gold2); }
+.char-card.active { border-color:var(--gold); background:var(--golddim); }
+.char-card.active::before { background:var(--gold); }
+.char-card-name { font-family:var(--ff); font-size:0.85rem; color:var(--textgold); letter-spacing:0.05em; margin-bottom:0.2rem; }
+.char-card-meta { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); letter-spacing:0.08em; }
+.char-card-badge { display:inline-block; margin-top:0.35rem; font-family:var(--ffm); font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.1rem 0.4rem; border:1px solid; }
+.badge-barbare { color:#e06060; border-color:#602020; background:rgba(192,57,43,0.08); }
+.badge-guerrier { color:#6080e0; border-color:#203070; background:rgba(41,128,185,0.08); }
+.badge-druide { color:#60c070; border-color:#205030; background:rgba(39,174,96,0.08); }
+.badge-rodeur { color:#c09050; border-color:#503020; background:rgba(214,137,16,0.08); }
+.btn-sidebar { width:100%; font-family:var(--ff); font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; padding:0.65rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; margin-top:0.2rem; }
+.btn-sidebar:hover { background:var(--golddim); }
+.sidebar-footer { margin-top:auto; padding-top:1rem; border-top:1px solid var(--border); }
+.wiki-sidebar-link { display:flex; align-items:center; gap:0.5rem; font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); text-decoration:none; padding:0.55rem 0.7rem; border:1px solid var(--border); transition:all 0.2s; letter-spacing:0.1em; cursor:pointer; background:transparent; width:100%; text-align:left; }
+.wiki-sidebar-link:hover { color:var(--blue2); border-color:var(--blue); background:var(--bluebg); }
+
+/* ===== MAIN ===== */
+.main-content { padding:2rem; overflow-y:auto; }
+.view { display:none; }
+.view.active { display:block; }
+
+/* ===== FICHE HEADER ===== */
+.fiche-header { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--gold); padding:1.8rem 2rem; margin-bottom:1.5rem; position:relative; overflow:hidden; }
+.fiche-header::after { content:'⚔'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%); font-size:4rem; color:var(--border); pointer-events:none; }
+.fiche-nom { font-family:var(--ffd); font-size:2rem; color:var(--textgold); letter-spacing:0.05em; line-height:1; margin-bottom:0.3rem; }
+.fiche-soustitre { font-family:var(--ffm); font-size:0.68rem; color:var(--textdim); letter-spacing:0.2em; text-transform:uppercase; }
+.fiche-tags { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.9rem; }
+.tag { font-family:var(--ffm); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.2rem 0.5rem; border:1px solid; }
+.tag-niv { color:var(--green2); border-color:rgba(82,190,128,0.3); background:var(--greenbg); }
+.tag-align { color:var(--text); border-color:var(--border2); background:var(--panel2); }
+.tag-div { color:var(--gold); border-color:rgba(201,162,39,0.35); background:var(--golddim); }
+.tag-ed { color:var(--purple2); border-color:rgba(187,143,206,0.3); background:var(--purplebg); }
+.tag-race { color:var(--amber); border-color:rgba(214,137,16,0.3); background:var(--amberbg); }
+
+/* ===== STATS ===== */
+.stats-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:0.6rem; margin-bottom:1.5rem; }
+.stat-box { background:var(--panel); border:1px solid var(--border); padding:0.9rem 0.5rem; text-align:center; transition:all 0.2s; }
+.stat-box:hover { border-color:var(--border2); background:var(--panel2); }
+.stat-abbr { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); letter-spacing:0.2em; display:block; }
+.stat-base { font-family:var(--ffd); font-size:1.7rem; color:var(--textgold); line-height:1.1; display:block; margin:0.15rem 0; }
+.stat-mod { font-family:var(--ffm); font-size:0.7rem; padding:0.1rem 0.35rem; display:inline-block; }
+.mod-pos { color:var(--green2); background:var(--greenbg); border:1px solid rgba(82,190,128,0.25); }
+.mod-neg { color:var(--red2); background:var(--redbg); border:1px solid rgba(224,80,80,0.25); }
+.mod-zer { color:var(--textdim); background:var(--panel2); border:1px solid var(--border); }
+
+/* ===== SECTION TABS ===== */
+.section-tabs { display:flex; gap:0.25rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+.stab { font-family:var(--ffm); font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.4rem 0.85rem; background:transparent; color:var(--textdim); border:1px solid var(--border); cursor:pointer; transition:all 0.2s; }
+.stab:hover { color:var(--text); border-color:var(--border2); }
+.stab.active { color:var(--gold); border-color:var(--gold); background:var(--golddim); }
+
+/* ===== PANELS ===== */
+.panel-block { background:var(--panel); border:1px solid var(--border); padding:1.2rem 1.4rem; margin-bottom:1rem; }
+.panel-title { font-family:var(--ffm); font-size:0.58rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--textdim); border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:1rem; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem; }
+
+/* ===== PV BAR ===== */
+.pv-wrap { margin-bottom:1.2rem; }
+.pv-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.4rem; }
+.pv-label { font-family:var(--ff); font-size:0.7rem; color:var(--textdim); letter-spacing:0.18em; text-transform:uppercase; }
+.pv-val { font-family:var(--ffd); font-size:1.05rem; color:var(--red2); }
+.pv-bar { height:6px; background:var(--bg3); border:1px solid var(--border); overflow:hidden; }
+.pv-fill { height:100%; background:linear-gradient(90deg,var(--red),var(--red2)); transition:width 0.5s ease; }
+
+/* ===== COMBAT ===== */
+.combat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.6rem; margin-bottom:1rem; }
+.cbox { background:var(--bg3); border:1px solid var(--border); padding:0.8rem 0.5rem; text-align:center; }
+.cbox-label { font-family:var(--ffm); font-size:0.56rem; color:var(--textdim); letter-spacing:0.15em; text-transform:uppercase; }
+.cbox-val { font-family:var(--ffd); font-size:1.2rem; color:var(--text); margin:0.2rem 0; }
+.cbox-sub { font-family:var(--ffm); font-size:0.55rem; color:var(--textfaint); letter-spacing:0.06em; }
+.saves-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+.sbox { background:var(--bg3); border:1px solid var(--border); padding:0.7rem 0.5rem; text-align:center; }
+.sbox-label { font-family:var(--ffm); font-size:0.56rem; color:var(--textdim); letter-spacing:0.12em; text-transform:uppercase; }
+.sbox-val { font-family:var(--ffd); font-size:1.1rem; color:var(--text); margin:0.2rem 0; }
+.sbox-type { font-family:var(--ffm); font-size:0.52rem; letter-spacing:0.1em; text-transform:uppercase; }
+.sbox-type.fort { color:var(--green2); }
+.sbox-type.faible { color:var(--red2); }
+.bonus-row { display:flex; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid rgba(37,42,80,0.3); font-size:0.88rem; }
+.bonus-val { font-family:var(--ffm); font-size:0.7rem; color:var(--textgold); }
+
+/* ===== COMPÉTENCES ===== */
+.comp-table { width:100%; border-collapse:collapse; }
+.comp-table th { font-family:var(--ffm); font-size:0.56rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--textdim); text-align:left; padding:0.35rem 0.6rem; border-bottom:1px solid var(--border); }
+.comp-table td { padding:0.35rem 0.6rem; font-size:0.88rem; border-bottom:1px solid rgba(37,42,80,0.2); }
+.td-total { font-family:var(--ffm); font-size:0.72rem; color:var(--textgold); }
+.td-classe { font-family:var(--ffm); font-size:0.6rem; color:var(--gold); }
+.don-item { display:flex; align-items:center; gap:0.6rem; padding:0.3rem 0; border-bottom:1px solid rgba(37,42,80,0.2); font-size:0.9rem; }
+.don-icon { color:var(--gold); font-size:0.75rem; }
+
+/* ===== ÉQUIPEMENT ===== */
+.arme-row { background:var(--bg3); border:1px solid var(--border); padding:0.8rem 1rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
+.arme-nom { font-family:var(--ff); font-size:0.8rem; color:var(--textgold); flex:1; min-width:120px; }
+.arme-stat { text-align:center; }
+.arme-stat-l { font-family:var(--ffm); font-size:0.52rem; color:var(--textdim); letter-spacing:0.1em; text-transform:uppercase; }
+.arme-stat-v { font-family:var(--ffd); font-size:0.9rem; color:var(--text); }
+.inv-row { display:flex; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid rgba(37,42,80,0.2); font-size:0.88rem; }
+.inv-poids { font-family:var(--ffm); font-size:0.68rem; color:var(--textdim); }
+.richesses-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; }
+.rbox { padding:0.7rem 0.4rem; text-align:center; border:1px solid; }
+.rbox-label { font-family:var(--ffm); font-size:0.52rem; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.2rem; }
+.rbox-val { font-family:var(--ffd); font-size:0.95rem; }
+.rbox-pp { color:#b0c0d0; border-color:rgba(176,192,208,0.3); background:rgba(176,192,208,0.05); }
+.rbox-po { color:var(--gold2); border-color:rgba(232,200,74,0.3); background:var(--golddim); }
+.rbox-pa { color:#a0b0c0; border-color:rgba(160,176,192,0.3); background:rgba(160,176,192,0.05); }
+.rbox-pc { color:#b07040; border-color:rgba(176,112,64,0.3); background:rgba(176,112,64,0.05); }
+
+/* ===== CAPACITÉS ===== */
+.capa-block { padding:0.8rem 0; border-bottom:1px solid rgba(37,42,80,0.3); }
+.capa-block.capa-race { border-bottom-color:rgba(214,137,16,0.15); }
+.capa-name { font-family:var(--ff); font-size:0.82rem; color:var(--textgold); margin-bottom:0.3rem; letter-spacing:0.04em; }
+.capa-desc { color:var(--textdim); font-size:0.9rem; }
+
+/* ===== DESCRIPTION ===== */
+.desc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+.dbox { background:var(--bg3); border:1px solid var(--border); padding:0.7rem; text-align:center; }
+.dbox-label { font-family:var(--ffm); font-size:0.52rem; color:var(--textdim); letter-spacing:0.12em; text-transform:uppercase; }
+.dbox-val { font-family:var(--ffd); font-size:0.9rem; color:var(--textgold); margin-top:0.2rem; }
+.background-block { background:var(--bg3); border-left:3px solid var(--gold); padding:1rem 1.2rem; font-style:italic; color:var(--textdim); font-size:0.95rem; line-height:1.7; }
+.xp-wrap { }
+.xp-header { display:flex; justify-content:space-between; font-family:var(--ffm); font-size:0.65rem; color:var(--textdim); letter-spacing:0.08em; margin-bottom:0.4rem; }
+.xp-bar { height:6px; background:var(--bg3); border:1px solid var(--border); overflow:hidden; }
+.xp-fill { height:100%; background:linear-gradient(90deg,var(--purple),var(--purple2)); transition:width 0.5s ease; }
+
+/* ===== FORM CRÉER ===== */
+.form-wrap { max-width:700px; }
+.form-hero { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--gold); padding:1.8rem 2rem; margin-bottom:1.5rem; }
+.form-hero-title { font-family:var(--ffd); font-size:1.5rem; color:var(--textgold); margin-bottom:0.3rem; }
+.form-hero-sub { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); letter-spacing:0.2em; text-transform:uppercase; }
+.form-group { margin-bottom:1rem; }
+.form-label { font-family:var(--ffm); font-size:0.58rem; color:var(--textdim); letter-spacing:0.15em; text-transform:uppercase; display:block; margin-bottom:0.4rem; }
+.form-input, .form-select, .form-textarea { width:100%; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:0.6rem 0.85rem; font-family:var(--ffs); font-size:0.95rem; outline:none; transition:all 0.2s; appearance:none; }
+.form-input:focus, .form-select:focus { border-color:var(--gold); background:var(--panel2); }
+.form-select option { background:var(--panel); }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem; }
+.stat-inputs-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:0.5rem; }
+.stat-inp-wrap { text-align:center; }
+.stat-inp-abbr { font-family:var(--ff); font-size:0.62rem; color:var(--textdim); letter-spacing:0.15em; display:block; margin-bottom:0.3rem; }
+.stat-inp-num { width:100%; background:var(--panel); border:1px solid var(--border); color:var(--textgold); padding:0.5rem 0.25rem; font-family:var(--ffd); font-size:1rem; text-align:center; outline:none; transition:border-color 0.2s; }
+.stat-inp-num:focus { border-color:var(--gold); }
+.info-preview { background:var(--golddim); border:1px solid rgba(201,162,39,0.25); padding:0.7rem 1rem; margin-top:0.5rem; font-size:0.85rem; color:var(--textdim); display:none; line-height:1.5; }
+.info-preview.show { display:block; }
+.info-preview strong { color:var(--textgold); font-weight:600; }
+.calc-box { background:var(--panel); border:1px solid var(--border); padding:1rem 1.2rem; margin-top:1rem; display:none; }
+.calc-box.show { display:block; }
+.calc-box-title { font-family:var(--ffm); font-size:0.58rem; color:var(--textdim); letter-spacing:0.25em; text-transform:uppercase; margin-bottom:0.6rem; border-bottom:1px solid var(--border); padding-bottom:0.4rem; }
+.calc-line { display:flex; justify-content:space-between; align-items:center; padding:0.3rem 0; border-bottom:1px solid rgba(37,42,80,0.3); font-family:var(--ffm); font-size:0.7rem; }
+.calc-line:last-child { border-bottom:none; color:var(--textgold); font-size:0.75rem; }
+.calc-line span:first-child { color:var(--textdim); }
+.btn-forge { font-family:var(--ff); font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.9rem 2.5rem; background:var(--gold); color:#06070f; border:none; cursor:pointer; margin-top:1.2rem; transition:all 0.2s; clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%); }
+.btn-forge:hover { background:var(--gold2); transform:translateY(-2px); }
+.btn-loading { opacity:0.6; cursor:not-allowed; }
+
+/* ===== WIKI ===== */
+.wiki-hero { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--blue2); padding:3rem 2rem; text-align:center; margin-bottom:1.5rem; }
+.wiki-glyph { font-size:3.5rem; margin-bottom:1rem; }
+.wiki-title { font-family:var(--ffd); font-size:1.5rem; color:var(--textgold); margin-bottom:0.5rem; }
+.wiki-desc { color:var(--textdim); max-width:480px; margin:0 auto 1.5rem; font-size:0.95rem; }
+.wiki-cta { display:inline-block; font-family:var(--ff); font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase; padding:0.75rem 1.8rem; background:transparent; color:var(--blue2); border:1px solid var(--blue2); text-decoration:none; transition:all 0.2s; cursor:pointer; }
+.wiki-cta:hover { background:var(--bluebg); }
+.wiki-resources { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.wiki-card { background:var(--panel); border:1px solid var(--border); padding:1.2rem; transition:all 0.2s; }
+.wiki-card:hover { border-color:var(--border2); background:var(--panel2); }
+.wiki-card-icon { font-size:1.5rem; margin-bottom:0.6rem; }
+.wiki-card-title { font-family:var(--ff); font-size:0.8rem; color:var(--textgold); margin-bottom:0.3rem; letter-spacing:0.05em; }
+.wiki-card-desc { font-size:0.83rem; color:var(--textdim); }
+
+/* ===== TOAST ===== */
+.toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:999; background:var(--panel2); border:1px solid var(--gold); color:var(--textgold); padding:0.7rem 1.2rem; font-family:var(--ffm); font-size:0.72rem; letter-spacing:0.1em; transform:translateY(5rem); opacity:0; transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+.anim { animation:fadeIn 0.4s ease forwards; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--bg2); }
+::-webkit-scrollbar-thumb { background:var(--border2); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:55vh; text-align:center; gap:1rem; }
+.empty-glyph { font-family:var(--ffd); font-size:3rem; color:var(--border2); }
+.empty-title { font-family:var(--ff); font-size:1rem; color:var(--textdim); letter-spacing:0.08em; }
+.empty-sub { color:var(--textdim); font-size:0.9rem; max-width:280px; }
+</style>
 </head>
 <body>
-  <div id="header-placeholder"></div>
 
-  <main>
-    <section id="auth-section">
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-title">Les Nyctalopes</div>
+    <div class="auth-sub">Plateforme Pathfinder · PF1 &amp; PF2</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="showAuthTab('login')">Se connecter</button>
+      <button class="auth-tab" id="tab-register" onclick="showAuthTab('register')">Créer un compte</button>
+    </div>
 
-      <!-- Boutons bascule -->
-      <div id="auth-toggle">
-        <button id="btn-show-login" class="active">Se connecter</button>
-        <button id="btn-show-register">Créer un compte</button>
+    <!-- Connexion -->
+    <div id="form-login">
+      <div class="auth-group">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="login-email" type="email" placeholder="aventurier@golarion.fr">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label">Mot de passe</label>
+        <input class="auth-input" id="login-password" type="password" placeholder="••••••••">
+      </div>
+      <button class="auth-btn" onclick="doLogin()">⚔ Entrer dans les Forges</button>
+    </div>
+
+    <!-- Inscription -->
+    <div id="form-register" style="display:none">
+      <div class="auth-group">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="reg-email" type="email" placeholder="aventurier@golarion.fr">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label">Mot de passe</label>
+        <input class="auth-input" id="reg-password" type="password" placeholder="••••••••">
+      </div>
+      <div class="auth-group">
+        <label class="auth-label">Confirmer le mot de passe</label>
+        <input class="auth-input" id="reg-confirm" type="password" placeholder="••••••••">
+      </div>
+      <button class="auth-btn" onclick="doRegister()">✦ Forger mon compte</button>
+    </div>
+
+    <p class="auth-msg" id="auth-msg"></p>
+  </div>
+</div>
+
+<!-- ===== APP (masquée jusqu'à connexion) ===== -->
+<div id="app" style="display:none">
+
+  <header class="topbar">
+    <div class="topbar-brand" onclick="showView('fiches')">
+      <div class="topbar-emblem">⚔</div>
+      <div class="topbar-name">Les Nyctalopes <span>Plateforme Pathfinder · PF1 &amp; PF2</span></div>
+    </div>
+    <nav>
+      <ul class="topbar-nav">
+        <li><button id="nav-fiches" class="active" onclick="showView('fiches')">Fiches</button></li>
+        <li><button id="nav-creer" onclick="showView('creer')">Créer</button></li>
+        <li><button id="nav-wiki" onclick="showView('wiki')">Wiki</button></li>
+      </ul>
+    </nav>
+    <div class="topbar-user">
+      <span class="topbar-email" id="topbar-email"></span>
+      <button class="topbar-signout" onclick="doSignOut()">Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section-title">Mes Aventuriers</div>
+      <div class="char-list" id="char-list"></div>
+      <button class="btn-sidebar" onclick="showView('creer')">+ Nouveau personnage</button>
+      <div class="sidebar-footer">
+        <button class="wiki-sidebar-link" onclick="showView('wiki')">📖&nbsp; Wiki Pathfinder-FR</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div id="view-fiches" class="view active">
+        <div id="fiche-content"></div>
       </div>
 
-      <!-- Formulaire Connexion -->
-      <form id="login-form">
-        <h2>Connexion</h2>
-        <input type="email" id="login-email" placeholder="Email" required />
-        <input type="password" id="login-password" placeholder="Mot de passe" required />
-        <button type="submit">Se connecter</button>
-      </form>
+      <div id="view-creer" class="view">
+        <div class="form-wrap">
+          <div class="form-hero">
+            <div class="form-hero-title">Forger un Aventurier</div>
+            <div class="form-hero-sub">Pathfinder 1ère &amp; 2ème édition · Création guidée</div>
+          </div>
+          <div class="row2">
+            <div class="form-group">
+              <label class="form-label">Nom du personnage</label>
+              <input class="form-input" id="f-nom" type="text" placeholder="Kael Brandebois…">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Joueur</label>
+              <input class="form-input" id="f-joueur" type="text" placeholder="Votre prénom">
+            </div>
+          </div>
+          <div class="row3">
+            <div class="form-group">
+              <label class="form-label">Édition</label>
+              <select class="form-select" id="f-edition" onchange="updateSelects()">
+                <option value="PF1">Pathfinder 1</option>
+                <option value="PF2">Pathfinder 2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Race / Ascendance</label>
+              <select class="form-select" id="f-race" onchange="updateRaceInfo();updateCalc()"></select>
+              <div class="info-preview" id="race-preview"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Classe</label>
+              <select class="form-select" id="f-classe" onchange="updateClasseInfo();updateCalc()"></select>
+              <div class="info-preview" id="classe-preview"></div>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="form-group">
+              <label class="form-label">Alignement</label>
+              <select class="form-select" id="f-align">
+                <option>LB</option><option>NB</option><option>CB</option>
+                <option>LN</option><option>N</option><option selected>CN</option>
+                <option>LM</option><option>NM</option><option>CM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Divinité</label>
+              <input class="form-input" id="f-div" type="text" placeholder="Iomedae, Torag, Desna…">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Caractéristiques de base (avant modificateurs raciaux)</label>
+            <div class="stat-inputs-grid">
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">FOR</span><input class="stat-inp-num" id="f-FOR" type="number" min="3" max="20" value="15" oninput="updateCalc()"></div>
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">DEX</span><input class="stat-inp-num" id="f-DEX" type="number" min="3" max="20" value="12" oninput="updateCalc()"></div>
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">CON</span><input class="stat-inp-num" id="f-CON" type="number" min="3" max="20" value="14" oninput="updateCalc()"></div>
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">INT</span><input class="stat-inp-num" id="f-INT" type="number" min="3" max="20" value="10" oninput="updateCalc()"></div>
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">SAG</span><input class="stat-inp-num" id="f-SAG" type="number" min="3" max="20" value="12" oninput="updateCalc()"></div>
+              <div class="stat-inp-wrap"><span class="stat-inp-abbr">CHA</span><input class="stat-inp-num" id="f-CHA" type="number" min="3" max="20" value="8" oninput="updateCalc()"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Historique</label>
+            <input class="form-input" id="f-bg" type="text" placeholder="Son histoire en une phrase…">
+          </div>
+          <div class="calc-box" id="calc-box">
+            <div class="calc-box-title">⚙ Calculs automatiques à la création</div>
+            <div id="calc-lines"></div>
+          </div>
+          <button class="btn-forge" id="btn-forge" onclick="creerPersonnage()">⚔ Forger ce Personnage</button>
+        </div>
+      </div>
 
-      <!-- Formulaire Inscription (caché par défaut) -->
-      <form id="register-form" style="display:none;">
-        <h2>Créer un compte</h2>
-        <input type="email" id="register-email" placeholder="Email" required />
-        <input type="password" id="register-password" placeholder="Mot de passe" required />
-        <input type="password" id="register-confirm" placeholder="Confirmer le mot de passe" required />
-        <button type="submit">S'inscrire</button>
-      </form>
+      <div id="view-wiki" class="view">
+        <div class="wiki-hero">
+          <div class="wiki-glyph">📖</div>
+          <div class="wiki-title">Archives de Golarion</div>
+          <div class="wiki-desc">Accédez à la base de règles complète : sorts, capacités, équipements, monstres et scénarios Pathfinder.</div>
+          <a class="wiki-cta" href="https://www.pathfinder-fr.org" target="_blank" rel="noopener">Ouvrir le Wiki ↗</a>
+        </div>
+        <div class="wiki-resources">
+          <div class="wiki-card"><div class="wiki-card-icon">⚔</div><div class="wiki-card-title">Règles de Combat</div><div class="wiki-card-desc">BBA, manœuvres offensives, actions spéciales et conditions.</div></div>
+          <div class="wiki-card"><div class="wiki-card-icon">✦</div><div class="wiki-card-title">Sorts &amp; Magie</div><div class="wiki-card-desc">Listes de sorts, écoles, composantes et règles de lancement.</div></div>
+          <div class="wiki-card"><div class="wiki-card-icon">🐉</div><div class="wiki-card-title">Bestiaire</div><div class="wiki-card-desc">Créatures, monstres et antagonistes de Golarion.</div></div>
+          <div class="wiki-card"><div class="wiki-card-icon">🛡</div><div class="wiki-card-title">Équipements</div><div class="wiki-card-desc">Armes, armures, objets magiques et consommables.</div></div>
+          <div class="wiki-card"><div class="wiki-card-icon">👥</div><div class="wiki-card-title">Races &amp; Classes</div><div class="wiki-card-desc">Toutes les options de création pour PF1 et PF2.</div></div>
+          <div class="wiki-card"><div class="wiki-card-icon">🗺</div><div class="wiki-card-title">Golarion</div><div class="wiki-card-desc">Géographie, divinités, factions et lore du monde.</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
 
-      <!-- Message de retour (erreur / succès) -->
-      <p id="auth-message"></p>
+<div class="toast" id="toast"></div>
 
-    </section>
+<!-- Supabase -->
+<script>
+  window.SUPABASE_URL = "https://vlkiigbekxpbcwqhkkma.supabase.co";
+  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsa2lpZ2Jla3hwYmN3cWhra21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxOTI2MDcsImV4cCI6MjA1OTc2ODYwN30.placeholder";
+</script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <section id="fiches-list" style="display: none;">
-      <!-- Les fiches seront chargées ici -->
-    </section>
-  </main>
+<script>
+// ===== SUPABASE CLIENT =====
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-  <div id="footer-placeholder"></div>
+// ===== DATA =====
+const RACES = {
+  pf1_nain: { nom:"Nain", edition:"PF1", modifs:{FOR:0,DEX:0,CON:2,INT:0,SAG:2,CHA:-2}, desc:"Humanoïde trapu lié aux montagnes. +2 CON, +2 SAG, -2 CHA.", vitesse:6, vision:["Vision dans le noir 18m"], langues:["Commun","Nain"], bonus_raciaux:[{label:"Jets de sauvegarde (poison/sorts/magie)",val:"+2"},{label:"CA contre les géants",val:"+4"},{label:"Artisanat / Connaissances (pierres)",val:"+2"}], capacites:["Entraînement de haine","Sens des profondeurs"] },
+  pf2_humain: { nom:"Humain", edition:"PF2", modifs:{choix1:2,choix2:2}, desc:"Espèce adaptable. Deux bonus libres de +2 à distribuer.", vitesse:7, vision:["Vision normale"], langues:["Commun"], bonus_raciaux:[{label:"Dons d'ascendance supplémentaires",val:"✦"}], capacites:["Polyvalence (héritage)"] }
+};
 
-  <!-- Variables Supabase -->
-  <script>
-    window.SUPABASE_URL = "https://vlkiigbekxpbcwqhkkma.supabase.co";
-    window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsa2lpZ2Jla3hwYmN3cWhra21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDc4MzMsImV4cCI6MjA4OTU4MzgzM30.bIMuGXP70xZbryX9Lr_PwpwINNBurAzwfJI20kC39LE";
-  </script>
+const CLASSES = {
+  pf1_barbare: { nom:"Barbare", edition:"PF1", pv_niv:12, pts_comp:4, cle:"FOR", desc:"Combattant féroce canalisant sa rage. 12 PV/niveau, 4 pts comp.", jets_forts:["Vigueur"], jets_faibles:["Réflexes","Volonté"], competences:["Acrobaties","Escalade","Intimidation","Natation","Survie","Perception"], armes:"Simples & de guerre", armures:"Légères, intermédiaires, boucliers", capacites:[{nom:"Rage",desc:"Entre en rage un nombre de rounds/jour = 4 + mod CON × niveau. +4 FOR, +4 CON, +2 Vigueur, -2 CA."},{nom:"Esquive instinctive",desc:"Ne perd pas son bonus DEX à la CA quand pris au dépourvu."}] },
+  pf1_guerrier: { nom:"Guerrier", edition:"PF1", pv_niv:10, pts_comp:2, cle:"FOR", desc:"Expert des armes et armures lourdes. 10 PV/niveau, 2 pts comp.", jets_forts:["Vigueur"], jets_faibles:["Réflexes","Volonté"], competences:["Escalade","Équitation","Intimidation","Natation","Survie"], armes:"Toutes les armes", armures:"Toutes armures et boucliers", capacites:[{nom:"Spécialisation martiale",desc:"À chaque niveau pair, gagne un don de combat supplémentaire."},{nom:"Courage",desc:"Bonus de moral +2 aux jets contre les effets de peur."}] },
+  pf2_guerrier: { nom:"Guerrier", edition:"PF2", pv_niv:10, pts_comp:3, cle:"FOR", desc:"Maître du combat. 10 PV/niveau, jets Vigueur et Réflexes forts.", jets_forts:["Vigueur","Réflexes"], jets_faibles:["Volonté"], competences:["Acrobaties","Athlétisme","Intimidation","Survie"], armes:"Excellente maîtrise des armes", armures:"Très bonne maîtrise des armures", capacites:[{nom:"Attaque d'opportunité",desc:"Peut réagir pour attaquer une créature qui déclenche une action de mouvement."},{nom:"Style de combat",desc:"Choisit un style de combat ou des armes de prédilection."}] }
+};
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+let PERSONNAGES = [];
+let selectedId = null;
+let currentSection = "combat";
+let currentUser = null;
 
-  <script>
-    fetch('src/templates/header.html')
-      .then(r => r.text())
-      .then(html => document.getElementById('header-placeholder').innerHTML = html);
-    fetch('src/templates/footer.html')
-      .then(r => r.text())
-      .then(html => document.getElementById('footer-placeholder').innerHTML = html);
-  </script>
+// ===== AUTH =====
+function showAuthTab(tab) {
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('auth-msg').textContent = '';
+}
 
-  <script type="module" src="src/js/ui.js"></script>
+function setAuthMsg(msg, ok) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.style.color = ok ? 'var(--green2)' : 'var(--red2)';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  setAuthMsg('Connexion…', true);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { setAuthMsg('❌ ' + error.message, false); return; }
+  onLogin(data.user);
+}
+
+async function doRegister() {
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  if (password !== confirm) { setAuthMsg('❌ Les mots de passe ne correspondent pas.', false); return; }
+  setAuthMsg('Création du compte…', true);
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if (error) { setAuthMsg('❌ ' + error.message, false); return; }
+  setAuthMsg('✅ Compte créé ! Connectez-vous.', true);
+  showAuthTab('login');
+}
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function onLogin(user) {
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('topbar-email').textContent = user.email;
+  loadPersonnages();
+  updateSelects();
+}
+
+// ===== LOAD PERSONNAGES FROM SUPABASE =====
+async function loadPersonnages() {
+  const { data, error } = await sb.from('personnages').select('*').eq('user_id', currentUser.id);
+  if (error) { toast('Erreur chargement : ' + error.message); return; }
+  PERSONNAGES = (data || []).map(row => {
+    const d = typeof row.data_json === 'string' ? JSON.parse(row.data_json) : (row.data_json || {});
+    return { ...d, _db_id: row.id, user_id: row.user_id, nom: row.nom, race_id: row.race_id, classe_id: row.classe_id };
+  });
+  if (PERSONNAGES.length > 0) { selectedId = PERSONNAGES[0]._db_id || PERSONNAGES[0].id; }
+  renderSidebar();
+  renderFiche();
+}
+
+// ===== VIEWS =====
+function showView(v) {
+  ["fiches","creer","wiki"].forEach(n => {
+    document.getElementById("view-"+n).classList.toggle("active", n===v);
+    const btn = document.getElementById("nav-"+n);
+    if(btn) btn.classList.toggle("active", n===v);
+  });
+  if(v==="creer") { updateSelects(); updateRaceInfo(); updateClasseInfo(); updateCalc(); }
+  if(v==="fiches") renderFiche();
+}
+
+// ===== SIDEBAR =====
+function renderSidebar() {
+  const list = document.getElementById("char-list");
+  if (PERSONNAGES.length === 0) {
+    list.innerHTML = `<div style="font-family:var(--ffm);font-size:0.6rem;color:var(--textdim);padding:0.5rem;letter-spacing:0.1em">Aucun aventurier</div>`;
+    return;
+  }
+  list.innerHTML = PERSONNAGES.map(p => {
+    const cl = CLASSES[p.classe_id];
+    const badgeClass = cl ? cl.nom.toLowerCase().replace(/[éè]/g,"e").replace(/ô/g,"o") : "guerrier";
+    const pid = p._db_id || p.id;
+    return `<div class="char-card ${pid===selectedId?'active':''}" onclick="selectChar('${pid}')">
+      <div class="char-card-name">${p.nom}</div>
+      <div class="char-card-meta">${RACES[p.race_id]?.nom||p.race_id||'?'} · Niv.${p.niveau||1}</div>
+      <span class="char-card-badge badge-${badgeClass}">${cl?.nom||p.classe_id||'?'} ${p.edition||''}</span>
+    </div>`;
+  }).join("");
+}
+
+function selectChar(id) {
+  selectedId = id;
+  currentSection = "combat";
+  renderSidebar();
+  renderFiche();
+  showView("fiches");
+}
+
+// ===== FICHE =====
+function ms(n) { return n > 0 ? "+"+n : String(n); }
+
+function renderFiche() {
+  const p = PERSONNAGES.find(x => (x._db_id||x.id) === selectedId);
+  const area = document.getElementById("fiche-content");
+  if (!p) {
+    area.innerHTML = `<div class="empty-state"><div class="empty-glyph">⚜</div><div class="empty-title">Aucun personnage sélectionné</div><div class="empty-sub">Créez votre premier aventurier ou sélectionnez-en un dans la liste.</div></div>`;
+    return;
+  }
+  const race = RACES[p.race_id] || {};
+  const cl   = CLASSES[p.classe_id] || {};
+  area.innerHTML = `
+    <div class="fiche-header anim">
+      <div class="fiche-nom">${p.nom}</div>
+      <div class="fiche-soustitre">${race.nom||p.race_id||''} · ${cl.nom||p.classe_id||''} · Niveau ${p.niveau||1} · ${p.edition||''}</div>
+      <div class="fiche-tags">
+        <span class="tag tag-niv">Niv. ${p.niveau||1}</span>
+        <span class="tag tag-align">${p.alignement||'N'}</span>
+        <span class="tag tag-div">⚑ ${p.divinite||'—'}</span>
+        <span class="tag tag-race">${race.nom||p.race_id||''}</span>
+        <span class="tag tag-ed">${p.edition||''}</span>
+      </div>
+    </div>
+    <div class="stats-grid anim">
+      ${p.carac ? Object.entries(p.carac).map(([k,v]) => `
+        <div class="stat-box">
+          <span class="stat-abbr">${k}</span>
+          <span class="stat-base">${v.base}</span>
+          <span class="stat-mod ${v.mod>0?'mod-pos':v.mod<0?'mod-neg':'mod-zer'}">${ms(v.mod)}</span>
+        </div>`).join("") : ''}
+    </div>
+    <div class="section-tabs anim">
+      ${["combat","compétences","équipement","capacités","description"].map(s => `
+        <button class="stab ${currentSection===s.replace(/[éè]/g,"e").replace("î","i")?"active":""}" onclick="setSection('${s}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>
+      `).join("")}
+    </div>
+    <div id="section-body" class="anim">${renderSection(p, race, cl, currentSection)}</div>`;
+}
+
+function setSection(s) {
+  const key = s.replace(/[éè]/g,"e").replace("î","i");
+  currentSection = key;
+  const p = PERSONNAGES.find(x => (x._db_id||x.id) === selectedId);
+  if (!p) return;
+  const race = RACES[p.race_id]||{};
+  const cl = CLASSES[p.classe_id]||{};
+  document.getElementById("section-body").innerHTML = renderSection(p, race, cl, s);
+  document.querySelectorAll(".stab").forEach(t => {
+    const match = t.textContent.toLowerCase().replace(/[éè]/g,"e").replace("î","i") === key;
+    t.classList.toggle("active", match);
+  });
+}
+
+function renderSection(p, race, cl, s) {
+  const key = s.replace(/[éè]/g,"e").replace("î","i");
+  if(key==="combat") return renderCombat(p, race, cl);
+  if(key==="competences") return renderComp(p, cl);
+  if(key==="equipement") return renderEquip(p);
+  if(key==="capacites") return renderCapas(p, race, cl);
+  if(key==="description") return renderDesc(p);
+  return renderCombat(p, race, cl);
+}
+
+function renderCombat(p, race, cl) {
+  const c = p.combats || {};
+  const saves = cl.jets_forts||[];
+  const pvPct = c.pv_max ? Math.round((c.pv_actuel||c.pv_max)/c.pv_max*100) : 100;
+  return `
+    <div class="pv-wrap">
+      <div class="pv-header"><span class="pv-label">Points de Vie</span><span class="pv-val">${c.pv_actuel||c.pv_max||0} / ${c.pv_max||0}</span></div>
+      <div class="pv-bar"><div class="pv-fill" style="width:${pvPct}%"></div></div>
+    </div>
+    <div class="combat-grid">
+      <div class="cbox"><div class="cbox-label">CA totale</div><div class="cbox-val">${c.ca||10}</div><div class="cbox-sub">contact ${c.ca_contact||10} · surpris ${c.ca_surprise||10}</div></div>
+      <div class="cbox"><div class="cbox-label">BBA</div><div class="cbox-val">${ms(c.bba||1)}</div><div class="cbox-sub">progression forte</div></div>
+      <div class="cbox"><div class="cbox-label">BMO</div><div class="cbox-val">${ms(c.bmo||1)}</div><div class="cbox-sub">manœuvres offensives</div></div>
+      <div class="cbox"><div class="cbox-label">Initiative</div><div class="cbox-val">${ms(c.initiative||0)}</div><div class="cbox-sub">DEX ${p.carac?.DEX ? ms(p.carac.DEX.mod) : '0'}</div></div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Jets de Sauvegarde</div>
+      <div class="saves-grid">
+        <div class="sbox"><div class="sbox-label">Vigueur</div><div class="sbox-val">${ms(c.saves?.vigueur||0)}</div><div class="sbox-type ${saves.includes('Vigueur')?'fort':'faible'}">${saves.includes("Vigueur")?"FORT":"FAIBLE"}</div></div>
+        <div class="sbox"><div class="sbox-label">Réflexes</div><div class="sbox-val">${ms(c.saves?.reflexes||0)}</div><div class="sbox-type ${saves.includes('Réflexes')?'fort':'faible'}">${saves.includes("Réflexes")?"FORT":"FAIBLE"}</div></div>
+        <div class="sbox"><div class="sbox-label">Volonté</div><div class="sbox-val">${ms(c.saves?.volonte||0)}</div><div class="sbox-type ${saves.includes('Volonté')?'fort':'faible'}">${saves.includes("Volonté")?"FORT":"FAIBLE"}</div></div>
+      </div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Bonus Raciaux — ${race.nom||''}</div>
+      ${(race.bonus_raciaux||[]).map(b => `<div class="bonus-row"><span>${b.label}</span><span class="bonus-val">${b.val}</span></div>`).join("")}
+    </div>`;
+}
+
+function renderComp(p, cl) {
+  return `
+    <div class="panel-block">
+      <div class="panel-title">Compétences · ${(p.competences||[]).reduce((s,c)=>s+(c.rang||0),0)} rangs utilisés</div>
+      <table class="comp-table">
+        <thead><tr><th>Compétence</th><th>Rang</th><th>Carac.</th><th>Classe</th><th>Total</th></tr></thead>
+        <tbody>${(p.competences||[]).map(c => `<tr><td>${c.nom}</td><td>${c.rang}</td><td>${ms(c.mod_carac)}</td><td>${c.classe?'<span class="td-classe">✦ +3</span>':''}</td><td><span class="td-total">${ms(c.total)}</span></td></tr>`).join("")}</tbody>
+      </table>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Compétences de classe — ${cl.nom||''}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem">${(cl.competences||[]).map(c => `<span class="tag tag-align" style="font-family:var(--ffs);text-transform:none;font-size:.82rem">${c}</span>`).join("")}</div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Dons</div>
+      ${(p.dons||[]).map(d => `<div class="don-item"><span class="don-icon">⬡</span><span>${d}</span></div>`).join("")}
+    </div>`;
+}
+
+function renderEquip(p) {
+  return `
+    <div class="panel-block">
+      <div class="panel-title">Armes</div>
+      ${(p.armes||[]).map(a => `<div class="arme-row"><div class="arme-nom">⚔ ${a.nom} <span style="font-family:var(--ffm);font-size:.6rem;color:var(--textdim);margin-left:.5rem">${a.type}</span></div><div class="arme-stat"><div class="arme-stat-l">Toucher</div><div class="arme-stat-v">${a.toucher}</div></div><div class="arme-stat"><div class="arme-stat-l">Dégâts</div><div class="arme-stat-v">${a.degats}</div></div><div class="arme-stat"><div class="arme-stat-l">Critique</div><div class="arme-stat-v">${a.crit}</div></div></div>`).join("")}
+    </div>
+    <div class="two-col">
+      <div class="panel-block">
+        <div class="panel-title">Inventaire · ${p.charge_actuelle||0}/${p.charge_max||0} kg</div>
+        ${(p.inventaire||[]).map(i => `<div class="inv-row"><span>${i.nom}</span><span class="inv-poids">${i.poids} kg</span></div>`).join("")}
+      </div>
+      <div class="panel-block">
+        <div class="panel-title">Richesses</div>
+        <div class="richesses-grid">
+          <div class="rbox rbox-pp"><div class="rbox-label">Platine</div><div class="rbox-val">${p.richesses?.pp||0}</div></div>
+          <div class="rbox rbox-po"><div class="rbox-label">Or</div><div class="rbox-val">${p.richesses?.po||0}</div></div>
+          <div class="rbox rbox-pa"><div class="rbox-label">Argent</div><div class="rbox-val">${p.richesses?.pa||0}</div></div>
+          <div class="rbox rbox-pc"><div class="rbox-label">Cuivre</div><div class="rbox-val">${p.richesses?.pc||0}</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCapas(p, race, cl) {
+  return `
+    <div class="panel-block">
+      <div class="panel-title">Capacités de Classe — ${cl.nom||''}</div>
+      ${(cl.capacites||[]).map(c => `<div class="capa-block"><div class="capa-name">${c.nom}</div><div class="capa-desc">${c.desc}</div></div>`).join("")}
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Capacités Raciales — ${race.nom||''}</div>
+      ${(race.capacites||[]).map(c => `<div class="capa-block capa-race"><div class="capa-name">${c}</div></div>`).join("")}
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Vision &amp; Langues</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">${(race.vision||[]).map(v => `<span class="tag tag-div">👁 ${v}</span>`).join("")}</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">${(race.langues||[]).map(l => `<span class="tag tag-align">${l}</span>`).join("")}</div>
+    </div>`;
+}
+
+function renderDesc(p) {
+  const d = p.description || {};
+  const xpPct = p.xp_niveau_suivant ? Math.round((p.xp_actuel||0)/p.xp_niveau_suivant*100) : 0;
+  return `
+    <div class="panel-block">
+      <div class="panel-title">Apparence physique</div>
+      <div class="desc-grid">
+        <div class="dbox"><div class="dbox-label">Âge</div><div class="dbox-val">${d.age||'?'} ans</div></div>
+        <div class="dbox"><div class="dbox-label">Taille</div><div class="dbox-val">${d.taille||'?'} cm</div></div>
+        <div class="dbox"><div class="dbox-label">Poids</div><div class="dbox-val">${d.poids||'?'} kg</div></div>
+        <div class="dbox"><div class="dbox-label">Cheveux</div><div class="dbox-val">${d.cheveux||'?'}</div></div>
+        <div class="dbox"><div class="dbox-label">Yeux</div><div class="dbox-val">${d.yeux||'?'}</div></div>
+        <div class="dbox"><div class="dbox-label">Peau</div><div class="dbox-val">${d.peau||'?'}</div></div>
+      </div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Historique</div>
+      <div class="background-block">"${p.background||'Origines inconnues.'}"</div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-title">Expérience</div>
+      <div class="xp-wrap">
+        <div class="xp-header"><span>XP actuel : ${p.xp_actuel||0}</span><span>Niveau suivant : ${p.xp_niveau_suivant||1000}</span></div>
+        <div class="xp-bar"><div class="xp-fill" style="width:${xpPct}%"></div></div>
+      </div>
+    </div>`;
+}
+
+// ===== CRÉATION =====
+function updateSelects() {
+  const ed = document.getElementById("f-edition")?.value;
+  if (!ed) return;
+  const raceEl = document.getElementById("f-race");
+  const classeEl = document.getElementById("f-classe");
+  raceEl.innerHTML = Object.entries(RACES).filter(([k]) => k.startsWith(ed.toLowerCase())).map(([k,v]) => `<option value="${k}">${v.nom} (${v.edition})</option>`).join("");
+  classeEl.innerHTML = Object.entries(CLASSES).filter(([k]) => k.startsWith(ed.toLowerCase())).map(([k,v]) => `<option value="${k}">${v.nom} (${v.edition})</option>`).join("");
+  updateRaceInfo(); updateClasseInfo(); updateCalc();
+}
+
+function updateRaceInfo() {
+  const r = RACES[document.getElementById("f-race")?.value];
+  const el = document.getElementById("race-preview");
+  if (!r || !el) return;
+  const mods = Object.entries(r.modifs).filter(([,v])=>v!==0).map(([k,v])=>`<strong>${k} ${v>0?'+'+v:v}</strong>`).join(" · ");
+  el.innerHTML = `📌 ${r.desc}${mods?" · "+mods:""}`;
+  el.classList.add("show");
+}
+
+function updateClasseInfo() {
+  const c = CLASSES[document.getElementById("f-classe")?.value];
+  const el = document.getElementById("classe-preview");
+  if (!c || !el) return;
+  el.innerHTML = `⚔ ${c.desc}`;
+  el.classList.add("show");
+}
+
+function mod(n) { return Math.floor((n - 10) / 2); }
+
+function updateCalc() {
+  const stats = ["FOR","DEX","CON","INT","SAG","CHA"];
+  const vals = {};
+  stats.forEach(s => { const el = document.getElementById("f-"+s); vals[s] = el ? parseInt(el.value)||10 : 10; });
+  const raceKey = document.getElementById("f-race")?.value;
+  const classeKey = document.getElementById("f-classe")?.value;
+  if (!raceKey || !classeKey) return;
+  const race = RACES[raceKey]; const cl = CLASSES[classeKey];
+  if (!race || !cl) return;
+  const rm = race.modifs||{};
+  const final = {};
+  stats.forEach(s => { final[s] = (vals[s]||10) + (rm[s]||0); });
+  const conMod = mod(final.CON); const dexMod = mod(final.DEX); const sagMod = mod(final.SAG); const intMod = mod(final.INT);
+  const pv = cl.pv_niv + conMod; const pts = Math.max(1, cl.pts_comp + intMod);
+  const ms2 = n => n>=0?"+"+n:String(n);
+  const lines = [
+    ["FOR finale", `${vals.FOR} + ${rm.FOR||0} = <strong style='color:var(--textgold)'>${final.FOR}</strong> (mod ${ms2(mod(final.FOR))})`],
+    ["CON finale", `${vals.CON} + ${rm.CON||0} = <strong style='color:var(--textgold)'>${final.CON}</strong> (mod ${ms2(conMod)})`],
+    ["PV max", `${cl.pv_niv} + ${conMod} (CON) = <strong style='color:var(--red2)'>${pv}</strong>`],
+    ["Vigueur", `2 + ${conMod} = <strong style='color:var(--green2)'>${ms2(2+conMod)}</strong>`],
+    ["Réflexes", `${dexMod} = <strong>${ms2(dexMod)}</strong>`],
+    ["Volonté", `${sagMod} = <strong>${ms2(sagMod)}</strong>`],
+    ["Points de compétences", `${cl.pts_comp} + ${intMod} (INT) = <strong style='color:var(--gold)'>${pts}</strong>`],
+  ];
+  document.getElementById("calc-lines").innerHTML = lines.map(([l,v]) => `<div class="calc-line"><span>${l}</span><span>${v}</span></div>`).join("");
+  document.getElementById("calc-box").classList.add("show");
+}
+
+async function creerPersonnage() {
+  const nom = document.getElementById("f-nom")?.value?.trim();
+  if (!nom) { toast("⚠ Entrez un nom de personnage"); return; }
+  const raceKey = document.getElementById("f-race").value;
+  const classeKey = document.getElementById("f-classe").value;
+  const race = RACES[raceKey]; const cl = CLASSES[classeKey];
+  const edition = document.getElementById("f-edition").value;
+  const stats = ["FOR","DEX","CON","INT","SAG","CHA"];
+  const rm = race.modifs||{};
+  const carac = {};
+  stats.forEach(s => { const base = (parseInt(document.getElementById("f-"+s)?.value)||10) + (rm[s]||0); carac[s] = {base, mod: mod(base)}; });
+  const conMod = carac.CON.mod; const dexMod = carac.DEX.mod; const sagMod = carac.SAG.mod; const intMod = carac.INT.mod;
+  const pvMax = cl.pv_niv + conMod;
+
+  const np = {
+    edition, joueur: document.getElementById("f-joueur")?.value?.trim()||"",
+    date_creation: new Date().toISOString().slice(0,10),
+    niveau: 1, xp_actuel: 0, xp_niveau_suivant: 1000,
+    alignement: document.getElementById("f-align")?.value||"N",
+    divinite: document.getElementById("f-div")?.value||"—",
+    background: document.getElementById("f-bg")?.value||"Origines inconnues.",
+    carac,
+    combats: { pv_max:pvMax, pv_actuel:pvMax, initiative:dexMod, bba:1, bmo:4, ca:10+dexMod, ca_contact:10+dexMod, ca_surprise:10, saves:{vigueur:2+conMod, reflexes:dexMod, volonte:sagMod}, rm:0 },
+    competences: [], dons: [], armes: [],
+    inventaire: [{nom:"Sac à dos",poids:1}],
+    charge_actuelle: 1, charge_max: Math.max(10, carac.FOR.base*2),
+    richesses: {pp:0,po:0,pa:0,pc:0},
+    description: {age:25,taille:170,poids:70,cheveux:"?",yeux:"?",peau:"?"}
+  };
+
+  const btn = document.getElementById("btn-forge");
+  btn.classList.add("btn-loading"); btn.textContent = "Forge en cours…";
+
+  const { data, error } = await sb.from('personnages').insert({
+    user_id: currentUser.id,
+    nom: nom,
+    race_id: raceKey,
+    classe_id: classeKey,
+    data_json: np
+  }).select().single();
+
+  btn.classList.remove("btn-loading"); btn.textContent = "⚔ Forger ce Personnage";
+
+  if (error) { toast("❌ " + error.message); return; }
+
+  const newPerso = { ...np, nom, race_id: raceKey, classe_id: classeKey, _db_id: data.id };
+  PERSONNAGES.push(newPerso);
+  selectedId = data.id;
+  currentSection = "combat";
+  renderSidebar();
+  showView("fiches");
+  toast("✦ " + nom + " a rejoint les rangs !");
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ===== INIT =====
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) { onLogin(session.user); }
+});
+</script>
 </body>
 </html>
