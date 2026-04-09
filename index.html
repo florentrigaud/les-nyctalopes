@@ -451,17 +451,56 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 // ===== SUPABASE CLIENT =====
 const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-// ===== DATA =====
-const RACES = {
-  pf1_nain: { nom:"Nain", edition:"PF1", modifs:{FOR:0,DEX:0,CON:2,INT:0,SAG:2,CHA:-2}, desc:"Humanoïde trapu lié aux montagnes. +2 CON, +2 SAG, -2 CHA.", vitesse:6, vision:["Vision dans le noir 18m"], langues:["Commun","Nain"], bonus_raciaux:[{label:"Jets de sauvegarde (poison/sorts/magie)",val:"+2"},{label:"CA contre les géants",val:"+4"},{label:"Artisanat / Connaissances (pierres)",val:"+2"}], capacites:["Entraînement de haine","Sens des profondeurs"] },
-  pf2_humain: { nom:"Humain", edition:"PF2", modifs:{choix1:2,choix2:2}, desc:"Espèce adaptable. Deux bonus libres de +2 à distribuer.", vitesse:7, vision:["Vision normale"], langues:["Commun"], bonus_raciaux:[{label:"Dons d'ascendance supplémentaires",val:"✦"}], capacites:["Polyvalence (héritage)"] }
-};
+// ===== DATA (caches chargés depuis Supabase) =====
+let RACES = {};
+let CLASSES = {};
 
-const CLASSES = {
-  pf1_barbare: { nom:"Barbare", edition:"PF1", pv_niv:12, pts_comp:4, cle:"FOR", desc:"Combattant féroce canalisant sa rage. 12 PV/niveau, 4 pts comp.", jets_forts:["Vigueur"], jets_faibles:["Réflexes","Volonté"], competences:["Acrobaties","Escalade","Intimidation","Natation","Survie","Perception"], armes:"Simples & de guerre", armures:"Légères, intermédiaires, boucliers", capacites:[{nom:"Rage",desc:"Entre en rage un nombre de rounds/jour = 4 + mod CON × niveau. +4 FOR, +4 CON, +2 Vigueur, -2 CA."},{nom:"Esquive instinctive",desc:"Ne perd pas son bonus DEX à la CA quand pris au dépourvu."}] },
-  pf1_guerrier: { nom:"Guerrier", edition:"PF1", pv_niv:10, pts_comp:2, cle:"FOR", desc:"Expert des armes et armures lourdes. 10 PV/niveau, 2 pts comp.", jets_forts:["Vigueur"], jets_faibles:["Réflexes","Volonté"], competences:["Escalade","Équitation","Intimidation","Natation","Survie"], armes:"Toutes les armes", armures:"Toutes armures et boucliers", capacites:[{nom:"Spécialisation martiale",desc:"À chaque niveau pair, gagne un don de combat supplémentaire."},{nom:"Courage",desc:"Bonus de moral +2 aux jets contre les effets de peur."}] },
-  pf2_guerrier: { nom:"Guerrier", edition:"PF2", pv_niv:10, pts_comp:3, cle:"FOR", desc:"Maître du combat. 10 PV/niveau, jets Vigueur et Réflexes forts.", jets_forts:["Vigueur","Réflexes"], jets_faibles:["Volonté"], competences:["Acrobaties","Athlétisme","Intimidation","Survie"], armes:"Excellente maîtrise des armes", armures:"Très bonne maîtrise des armures", capacites:[{nom:"Attaque d'opportunité",desc:"Peut réagir pour attaquer une créature qui déclenche une action de mouvement."},{nom:"Style de combat",desc:"Choisit un style de combat ou des armes de prédilection."}] }
-};
+async function loadRacesEtClasses() {
+  const [{ data: racesData, error: rErr }, { data: classesData, error: cErr }] = await Promise.all([
+    sb.from('races').select('*'),
+    sb.from('classes').select('*')
+  ]);
+  if (rErr) { toast('Erreur chargement races : ' + rErr.message); }
+  if (cErr) { toast('Erreur chargement classes : ' + cErr.message); }
+
+  // Convertir en objets indexés par id (ex: "pf1_nain")
+  RACES = {};
+  (racesData || []).forEach(r => {
+    // Colonnes reelles Supabase : id (uuid), nom, description, bonus_modificateurs (jsonb), created_at
+    const modifs = (typeof r.bonus_modificateurs === 'string' ? JSON.parse(r.bonus_modificateurs) : r.bonus_modificateurs) || {};
+    RACES[r.id] = {
+      nom: r.nom || r.id,
+      edition: r.edition || 'PF1',
+      modifs: modifs,
+      desc: r.description || '',
+      vitesse: r.vitesse || 6,
+      vision: r.vision || [],
+      langues: r.langues || [],
+      bonus_raciaux: r.bonus_raciaux || [],
+      capacites: r.capacites || []
+    };
+  });
+
+  CLASSES = {};
+  (classesData || []).forEach(c => {
+    // Colonnes reelles Supabase : id (uuid), nom, description, pv_par_niveau, bonus_par_niveau, created_at
+    const bonus = (typeof c.bonus_par_niveau === 'string' ? JSON.parse(c.bonus_par_niveau) : c.bonus_par_niveau) || {};
+    CLASSES[c.id] = {
+      nom: c.nom || c.id,
+      edition: c.edition || bonus.edition || 'PF1',
+      pv_niv: c.pv_par_niveau || 8,
+      pts_comp: c.pts_comp || bonus.pts_comp || 2,
+      cle: c.cle || bonus.cle || 'FOR',
+      desc: c.description || '',
+      jets_forts: c.jets_forts || bonus.jets_forts || [],
+      jets_faibles: c.jets_faibles || bonus.jets_faibles || [],
+      competences: c.competences || bonus.competences || [],
+      armes: c.armes || bonus.armes || '',
+      armures: c.armures || bonus.armures || '',
+      capacites: c.capacites || bonus.capacites || []
+    };
+  });
+}
 
 let PERSONNAGES = [];
 let selectedId = null;
@@ -509,11 +548,12 @@ async function doSignOut() {
   location.reload();
 }
 
-function onLogin(user) {
+async function onLogin(user) {
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('topbar-email').textContent = user.email;
+  await loadRacesEtClasses();
   loadPersonnages();
   updateSelects();
 }
@@ -755,8 +795,11 @@ function updateSelects() {
   if (!ed) return;
   const raceEl = document.getElementById("f-race");
   const classeEl = document.getElementById("f-classe");
-  raceEl.innerHTML = Object.entries(RACES).filter(([k]) => k.startsWith(ed.toLowerCase())).map(([k,v]) => `<option value="${k}">${v.nom} (${v.edition})</option>`).join("");
-  classeEl.innerHTML = Object.entries(CLASSES).filter(([k]) => k.startsWith(ed.toLowerCase())).map(([k,v]) => `<option value="${k}">${v.nom} (${v.edition})</option>`).join("");
+  // Si la colonne edition existe dans Supabase, on filtre — sinon on affiche tout
+  const racesFiltered = Object.entries(RACES).filter(([,v]) => !v.edition || v.edition.toUpperCase() === ed.toUpperCase());
+  const classesFiltered = Object.entries(CLASSES).filter(([,v]) => !v.edition || v.edition.toUpperCase() === ed.toUpperCase());
+  raceEl.innerHTML = racesFiltered.map(([k,v]) => `<option value="${k}">${v.nom}</option>`).join("");
+  classeEl.innerHTML = classesFiltered.map(([k,v]) => `<option value="${k}">${v.nom}</option>`).join("");
   updateRaceInfo(); updateClasseInfo(); updateCalc();
 }
 
