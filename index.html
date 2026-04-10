@@ -294,6 +294,35 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .richesse-edit-cell label { font-family:var(--ffm); font-size:0.52rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.3rem; }
 .pv-edit-row { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
 .pv-edit-group { display:flex; flex-direction:column; gap:0.2rem; }
+
+/* ===== PV SLIDER ===== */
+.pv-slider-wrap { margin-bottom:1.2rem; }
+.pv-slider-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+.pv-val-display { font-family:var(--ffd); font-size:1.3rem; color:var(--red2); }
+.pv-slider { width:100%; -webkit-appearance:none; height:8px; background:var(--bg3); border:1px solid var(--border); outline:none; cursor:pointer; margin:0.4rem 0; }
+.pv-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; background:var(--red2); border:2px solid var(--red); cursor:pointer; border-radius:0; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.pv-slider::-moz-range-thumb { width:18px; height:18px; background:var(--red2); border:2px solid var(--red); cursor:pointer; border-radius:0; }
+.pv-bar-outer { height:8px; background:var(--bg3); border:1px solid var(--border); overflow:hidden; }
+.pv-bar-inner { height:100%; transition:width 0.3s ease, background 0.3s ease; }
+.pv-pct-label { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); text-align:center; letter-spacing:0.1em; }
+
+/* ===== COMP EDIT TABLE ===== */
+.comp-edit-table { width:100%; border-collapse:collapse; margin-bottom:0.5rem; }
+.comp-edit-table th { font-family:var(--ffm); font-size:0.54rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--textdim); padding:0.3rem 0.4rem; border-bottom:1px solid var(--border); text-align:center; }
+.comp-edit-table th:first-child { text-align:left; }
+.comp-edit-table td { padding:0.25rem 0.3rem; border-bottom:1px solid rgba(37,42,80,0.2); vertical-align:middle; }
+.comp-td-total { font-family:var(--ffm); font-size:0.78rem; color:var(--textgold); text-align:center; font-weight:bold; min-width:40px; }
+.comp-edit-table input[type="number"] { width:52px; background:var(--bg3); border:1px solid var(--border2); color:var(--text); padding:0.25rem 0.3rem; text-align:center; font-family:var(--ffm); font-size:0.8rem; outline:none; }
+.comp-edit-table input[type="number"]:focus { border-color:var(--gold); }
+.comp-edit-table input[type="text"] { width:100%; background:var(--bg3); border:1px solid var(--border2); color:var(--text); padding:0.25rem 0.4rem; font-family:var(--ffs); font-size:0.85rem; outline:none; }
+.comp-edit-table input[type="text"]:focus { border-color:var(--gold); }
+.comp-edit-table input[type="checkbox"] { cursor:pointer; width:14px; height:14px; accent-color:var(--gold); }
+
+/* ===== NIVEAU / XP ===== */
+.niveau-edit-row { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.8rem; align-items:flex-end; }
+.niveau-edit-group { display:flex; flex-direction:column; gap:0.3rem; }
+.autosave-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--green2); opacity:0; transition:opacity 0.5s; margin-left:0.4rem; }
+.autosave-dot.show { opacity:1; }
 </style>
 </head>
 <body>
@@ -655,14 +684,36 @@ function renderFiche() {
   const cl   = CLASSES[p.classe_id] || {};
   area.innerHTML = `
     <div class="fiche-header anim">
-      <div class="fiche-nom">${p.nom}</div>
-      <div class="fiche-soustitre">${race.nom||p.race_id||''} · ${cl.nom||p.classe_id||''} · Niveau ${p.niveau||1} · ${p.edition||''}</div>
-      <div class="fiche-tags">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem">
+        <div>
+          <div class="fiche-nom">${p.nom}</div>
+          <div class="fiche-soustitre">${race.nom||p.race_id||''} · ${cl.nom||p.classe_id||''} · Niveau ${p.niveau||1} · ${p.edition||''}</div>
+        </div>
+        <button class="btn-edit" style="align-self:flex-start;margin-top:0.3rem" onclick="editNiveau()">&#9998; Niveau &amp; XP</button>
+      </div>
+      <div class="fiche-tags" id="header-tags">
         <span class="tag tag-niv">Niv. ${p.niveau||1}</span>
         <span class="tag tag-align">${p.alignement||'N'}</span>
         <span class="tag tag-div">&#9873; ${p.divinite||'—'}</span>
         <span class="tag tag-race">${race.nom||p.race_id||''}</span>
         <span class="tag tag-ed">${p.edition||''}</span>
+      </div>
+      <div id="niveau-edit" style="display:none;margin-top:0.8rem">
+        <div class="niveau-edit-row">
+          <div class="niveau-edit-group"><label class="edit-label">Niveau</label><input class="edit-input edit-input-xs" id="en-niv" type="number" min="1" max="20" value="${p.niveau||1}"></div>
+          <div class="niveau-edit-group"><label class="edit-label">XP actuel</label><input class="edit-input edit-input-sm" id="en-xp" type="number" min="0" value="${p.xp_actuel||0}"></div>
+          <div class="niveau-edit-group"><label class="edit-label">XP prochain niv.</label><input class="edit-input edit-input-sm" id="en-xpnext" type="number" min="1" value="${p.xp_niveau_suivant||1000}"></div>
+          <div class="niveau-edit-group"><label class="edit-label">Alignement</label>
+            <select class="edit-input" id="en-align" style="width:80px">
+              ${["LB","NB","CB","LN","N","CN","LM","NM","CM"].map(a=>\`<option value="\${a}" \${(p.alignement||"N")===a?"selected":""}>\${a}</option>\`).join("")}
+            </select>
+          </div>
+          <div class="niveau-edit-group"><label class="edit-label">Divinite</label><input class="edit-input" id="en-div" style="width:120px" value="${p.divinite||'—'}"></div>
+        </div>
+        <div class="edit-bar">
+          <button class="btn-save" onclick="saveNiveau()">Valider</button>
+          <button class="btn-cancel" onclick="document.getElementById('niveau-edit').style.display='none'">Annuler</button>
+        </div>
       </div>
     </div>
     <div class="panel-block anim" style="margin-bottom:1rem">
@@ -729,11 +780,21 @@ function renderSection(p, race, cl, s) {
 function renderCombat(p, race, cl) {
   const c = p.combats || {};
   const saves = cl.jets_forts||[];
-  const pvPct = c.pv_max ? Math.round(((c.pv_actuel??c.pv_max)||0)/c.pv_max*100) : 100;
+  const pvAct = c.pv_actuel??c.pv_max??0;
+  const pvMax = c.pv_max||0;
+  const pvPct = pvMax ? Math.round((pvAct/pvMax)*100) : 100;
   return `
-    <div class="pv-wrap">
-      <div class="pv-header"><span class="pv-label">Points de Vie</span><span class="pv-val">${c.pv_actuel??c.pv_max??0} / ${c.pv_max||0}</span></div>
-      <div class="pv-bar"><div class="pv-fill" style="width:${pvPct}%"></div></div>
+    <div class="pv-slider-wrap">
+      <div class="pv-slider-header">
+        <span class="pv-label">Points de Vie</span>
+        <span class="pv-val-display" id="pv-display">${pvAct} <span style="font-size:0.75rem;color:var(--textdim)">/ ${pvMax}</span></span>
+      </div>
+      <input type="range" class="pv-slider" id="pv-slider" min="0" max="${pvMax}" value="${pvAct}"
+        oninput="onPvSlide(this.value,${pvMax})" onchange="savePvSlider(this.value)">
+      <div class="pv-bar-outer">
+        <div class="pv-bar-inner" id="pv-bar-inner" style="width:${pvPct}%;background:${pvColor(pvPct)}"></div>
+      </div>
+      <div class="pv-pct-label">${pvPct}% <span id="pv-autosave" class="autosave-dot"></span></div>
     </div>
     <div class="panel-block">
       <div class="panel-title-wrap panel-header">
@@ -783,39 +844,56 @@ function renderCombat(p, race, cl) {
 }
 
 function renderComp(p, cl) {
+  const comps = p.competences || [];
+  const totalRangs = comps.reduce((s,c) => s+(c.rang||0), 0);
+  const compRows = comps.map((c,i) => `
+    <tr>
+      <td>${c.nom||''}</td>
+      <td class="td-total">${ms(c.total||0)}</td>
+      <td>${c.rang||0}</td>
+      <td>${ms(c.mod_carac||0)}</td>
+      <td>${c.classe?'<span class="td-classe">+3</span>':''}</td>
+      <td>${c.autre||0}</td>
+    </tr>`).join('');
+
+  const editRows = comps.map((c,i) => `
+    <tr id="comp-row-${i}">
+      <td><input type="text" value="${c.nom||''}" placeholder="Nom..." oninput="calcCompRow(${i})"></td>
+      <td class="comp-td-total" id="comp-total-${i}">${ms(c.total||0)}</td>
+      <td><input type="number" value="${c.rang||0}" min="0" oninput="calcCompRow(${i})"></td>
+      <td><input type="number" value="${c.mod_carac||0}" oninput="calcCompRow(${i})"></td>
+      <td style="text-align:center"><input type="checkbox" ${c.classe?'checked':''} onchange="calcCompRow(${i})"></td>
+      <td><input type="number" value="${c.autre||0}" oninput="calcCompRow(${i})"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">x</button></td>
+    </tr>`).join('');
+
   return `
     <div class="panel-block">
       <div class="panel-header panel-title-wrap">
-        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Competences · ${(p.competences||[]).reduce((s,c)=>s+(c.rang||0),0)} rangs</span>
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Competences &middot; ${totalRangs} rangs</span>
         <button class="btn-edit" onclick="editComp()">&#9998; Modifier</button>
       </div>
       <div id="comp-view">
         <table class="comp-table">
-          <thead><tr><th>Competence</th><th>Rang</th><th>Carac.</th><th>Classe</th><th>Total</th></tr></thead>
-          <tbody>${(p.competences||[]).map((c,i) => `<tr><td>${c.nom}</td><td>${c.rang}</td><td>${ms(c.mod_carac)}</td><td>${c.classe?'<span class="td-classe">+3</span>':''}</td><td><span class="td-total">${ms(c.total)}</span></td></tr>`).join("")}</tbody>
+          <thead><tr><th>Competence</th><th>Total</th><th>Rang</th><th>Mod.Carac</th><th>Classe</th><th>Autre</th></tr></thead>
+          <tbody>${compRows||'<tr><td colspan="6" style="color:var(--textdim);font-size:0.8rem;padding:0.5rem">Aucune competence. Cliquez Modifier pour en ajouter.</td></tr>'}</tbody>
         </table>
       </div>
       <div id="comp-edit" style="display:none">
-        <div id="comp-edit-rows">
-          ${(p.competences||[]).map((c,i) => `
-          <div class="edit-row" id="comp-row-${i}">
-            <input class="edit-input" style="flex:2;min-width:120px" placeholder="Nom" value="${c.nom||''}">
-            <div><label class="edit-label">Rang</label><input class="edit-input edit-input-xs" type="number" min="0" value="${c.rang||0}"></div>
-            <div><label class="edit-label">Mod.carac</label><input class="edit-input edit-input-xs" type="number" value="${c.mod_carac||0}"></div>
-            <div><label class="edit-label">Classe?</label><input type="checkbox" ${c.classe?'checked':''}></div>
-            <button class="btn-del" onclick="delCompRow(${i})">x</button>
-          </div>`).join("")}
-        </div>
+        <table class="comp-edit-table">
+          <thead><tr><th style="min-width:140px">Nom</th><th>Total</th><th>Rang</th><th>Mod.Carac</th><th>Classe +3</th><th>Autre</th><th></th></tr></thead>
+          <tbody id="comp-edit-rows">${editRows}</tbody>
+        </table>
         <div class="edit-bar" style="margin-top:0.6rem">
-          <button class="btn-add" onclick="addCompRow()">+ Ajouter competence</button>
+          <button class="btn-add" onclick="addCompRow()">+ Competence</button>
           <button class="btn-save" onclick="saveComp()">Valider</button>
           <button class="btn-cancel" onclick="cancelEdit('comp')">Annuler</button>
         </div>
       </div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Competences de classe — ${cl.nom||''}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem">${(cl.competences||[]).map(c => `<span class="tag tag-align" style="font-family:var(--ffs);text-transform:none;font-size:.82rem">${c}</span>`).join("")}</div>
+      <div class="panel-title">Competences de classe &mdash; ${cl.nom||''}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem">${(cl.competences||[]).map(c => `<span class="tag tag-align" style="font-family:var(--ffs);text-transform:none;font-size:.82rem">${c}</span>`).join('')}</div>
     </div>
     <div class="panel-block">
       <div class="panel-header panel-title-wrap">
@@ -823,7 +901,7 @@ function renderComp(p, cl) {
         <button class="btn-edit" onclick="editDons()">&#9998; Modifier</button>
       </div>
       <div id="dons-view">
-        ${(p.dons||[]).map(d => `<div class="don-item"><span class="don-icon">⬡</span><span>${d}</span></div>`).join("")}
+        ${(p.dons||[]).map(d => `<div class="don-item"><span class="don-icon">&#x2B21;</span><span>${d}</span></div>`).join('') || '<div style="color:var(--textdim);font-size:0.85rem">Aucun don.</div>'}
       </div>
       <div id="dons-edit" style="display:none">
         <div id="dons-edit-rows">
@@ -831,10 +909,10 @@ function renderComp(p, cl) {
           <div class="edit-row" id="don-row-${i}">
             <input class="edit-input" style="flex:1" placeholder="Nom du don" value="${d||''}">
             <button class="btn-del" onclick="delDonRow(${i})">x</button>
-          </div>`).join("")}
+          </div>`).join('')}
         </div>
         <div class="edit-bar" style="margin-top:0.6rem">
-          <button class="btn-add" onclick="addDonRow()">+ Ajouter don</button>
+          <button class="btn-add" onclick="addDonRow()">+ Don</button>
           <button class="btn-save" onclick="saveDons()">Valider</button>
           <button class="btn-cancel" onclick="cancelEdit('dons')">Annuler</button>
         </div>
@@ -926,19 +1004,38 @@ function renderEquip(p) {
 }
 
 function renderCapas(p, race, cl) {
+  const capasClasse = cl.capacites || [];
+  const capasRace   = race.capacites || [];
+  const notesLibres = p.notes_capacites || '';
   return `
     <div class="panel-block">
-      <div class="panel-title">Capacités de Classe — ${cl.nom||''}</div>
-      ${(cl.capacites||[]).map(c => `<div class="capa-block"><div class="capa-name">${c.nom}</div><div class="capa-desc">${c.desc}</div></div>`).join("")}
+      <div class="panel-title">Capacites de Classe &mdash; ${cl.nom||''}</div>
+      ${capasClasse.length ? capasClasse.map(c => `<div class="capa-block"><div class="capa-name">${c.nom||c}</div><div class="capa-desc">${c.desc||''}</div></div>`).join('') : '<div style="color:var(--textdim);font-size:0.85rem">Donnees non chargees depuis Supabase.</div>'}
     </div>
     <div class="panel-block">
-      <div class="panel-title">Capacités Raciales — ${race.nom||''}</div>
-      ${(race.capacites||[]).map(c => `<div class="capa-block capa-race"><div class="capa-name">${c}</div></div>`).join("")}
+      <div class="panel-title">Capacites Raciales &mdash; ${race.nom||''}</div>
+      ${capasRace.length ? capasRace.map(c => `<div class="capa-block capa-race"><div class="capa-name">${c.nom||c}</div><div class="capa-desc">${c.desc||''}</div></div>`).join('') : '<div style="color:var(--textdim);font-size:0.85rem">Donnees non chargees depuis Supabase.</div>'}
     </div>
     <div class="panel-block">
       <div class="panel-title">Vision &amp; Langues</div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">${(race.vision||[]).map(v => `<span class="tag tag-div">👁 ${v}</span>`).join("")}</div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap">${(race.langues||[]).map(l => `<span class="tag tag-align">${l}</span>`).join("")}</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">${(race.vision||[]).map(v => `<span class="tag tag-div">&#128065; ${v}</span>`).join('')}</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">${(race.langues||[]).map(l => `<span class="tag tag-align">${l}</span>`).join('')}</div>
+    </div>
+    <div class="panel-block">
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Notes libres &amp; Capacites personnalisees</span>
+        <button class="btn-edit" onclick="editNotes()">&#9998; Modifier</button>
+      </div>
+      <div id="notes-view">
+        <div style="background:var(--bg3);border-left:3px solid var(--purple);padding:0.8rem 1rem;font-size:0.9rem;color:var(--textdim);white-space:pre-wrap;line-height:1.6">${notesLibres||'Aucune note. Cliquez Modifier pour ajouter.'}</div>
+      </div>
+      <div id="notes-edit" style="display:none">
+        <textarea class="edit-input" id="ed-notes" rows="6" style="resize:vertical;font-family:var(--ffs)">${notesLibres}</textarea>
+        <div class="edit-bar" style="margin-top:0.5rem">
+          <button class="btn-save" onclick="saveNotes()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('notes')">Annuler</button>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -1111,6 +1208,71 @@ function toast(msg) {
   setTimeout(() => t.classList.remove("show"), 3000);
 }
 
+// ===== PV SLIDER LIVE =====
+let pvSaveTimer = null;
+function onPvSlide(val, pvMax) {
+  const pct = pvMax ? Math.round((val/pvMax)*100) : 0;
+  const bar  = document.getElementById('pv-bar-inner');
+  const disp = document.getElementById('pv-display');
+  if (bar)  { bar.style.width = pct+'%'; bar.style.background = pvColorStr(pct); }
+  if (disp) { disp.innerHTML = val+' <span style="font-size:0.75rem;color:var(--textdim)">/ '+pvMax+'</span>'; }
+  // debounce save 1.5s
+  clearTimeout(pvSaveTimer);
+  pvSaveTimer = setTimeout(() => savePvSlider(val), 1500);
+}
+async function savePvSlider(val) {
+  const p = getPerso(); if (!p) return;
+  if (!p.combats) p.combats = {};
+  p.combats.pv_actuel = parseInt(val)||0;
+  const { error } = await sb.from('personnages').update({ data_json: p }).eq('id', p._db_id);
+  const dot = document.getElementById('pv-autosave');
+  if (dot) { dot.classList.add('show'); setTimeout(()=>dot.classList.remove('show'),2000); }
+  if (error) console.warn('PV save error:', error.message);
+}
+function pvColorStr(pct) {
+  if (pct > 60) return 'linear-gradient(90deg,var(--green),var(--green2))';
+  if (pct > 30) return 'linear-gradient(90deg,var(--amber),var(--gold2))';
+  return 'linear-gradient(90deg,var(--red),var(--red2))';
+}
+
+// ===== NIVEAU & XP =====
+function editNiveau() {
+  document.getElementById('niveau-edit').style.display = '';
+}
+async function saveNiveau() {
+  const p = getPerso(); if (!p) return;
+  p.niveau             = parseInt(document.getElementById('en-niv').value)||1;
+  p.xp_actuel          = parseInt(document.getElementById('en-xp').value)||0;
+  p.xp_niveau_suivant  = parseInt(document.getElementById('en-xpnext').value)||1000;
+  p.alignement         = document.getElementById('en-align').value;
+  p.divinite           = document.getElementById('en-div').value.trim();
+  if (await saveToSupabase(p)) { renderFiche(); }
+}
+
+// ===== NOTES CAPACITES =====
+function editNotes() {
+  document.getElementById('notes-view').style.display = 'none';
+  document.getElementById('notes-edit').style.display = '';
+}
+async function saveNotes() {
+  const p = getPerso(); if (!p) return;
+  p.notes_capacites = document.getElementById('ed-notes').value;
+  if (await saveToSupabase(p)) { setSection('capacites'); }
+}
+
+// ===== COMP ROW CALC =====
+function calcCompRow(i) {
+  const row = document.getElementById('comp-row-'+i); if (!row) return;
+  const inputs = row.querySelectorAll('input');
+  const rang      = parseInt(inputs[1]?.value)||0;
+  const modCarac  = parseInt(inputs[2]?.value)||0;
+  const classe    = inputs[3]?.checked ? 3 : 0;
+  const autre     = parseInt(inputs[4]?.value)||0;
+  const total     = rang + modCarac + classe + autre;
+  const td = document.getElementById('comp-total-'+i);
+  if (td) td.textContent = (total >= 0 ? '+' : '') + total;
+}
+
 // ===== EDIT HELPERS =====
 function getPerso() { return PERSONNAGES.find(x => (x._db_id||x.id) === selectedId); }
 
@@ -1176,31 +1338,35 @@ function editComp() {
 }
 
 function addCompRow() {
-  const container = document.getElementById('comp-edit-rows');
-  const i = container.children.length;
-  const div = document.createElement('div');
-  div.className = 'edit-row'; div.id = 'comp-row-'+i;
-  div.innerHTML = `<input class="edit-input" style="flex:2;min-width:120px" placeholder="Nom">
-    <div><label class="edit-label">Rang</label><input class="edit-input edit-input-xs" type="number" min="0" value="0"></div>
-    <div><label class="edit-label">Mod.carac</label><input class="edit-input edit-input-xs" type="number" value="0"></div>
-    <div><label class="edit-label">Classe?</label><input type="checkbox"></div>
-    <button class="btn-del" onclick="this.closest('.edit-row').remove()">x</button>`;
-  container.appendChild(div);
+  const tbody = document.getElementById('comp-edit-rows');
+  const i = tbody.rows.length;
+  const tr = document.createElement('tr');
+  tr.id = 'comp-row-'+i;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Nom..." oninput="calcCompRow(${i})"></td>
+    <td class="comp-td-total" id="comp-total-${i}">+0</td>
+    <td><input type="number" value="0" min="0" oninput="calcCompRow(${i})"></td>
+    <td><input type="number" value="0" oninput="calcCompRow(${i})"></td>
+    <td style="text-align:center"><input type="checkbox" onchange="calcCompRow(${i})"></td>
+    <td><input type="number" value="0" oninput="calcCompRow(${i})"></td>
+    <td><button class="btn-del" onclick="this.closest('tr').remove()">x</button></td>`;
+  tbody.appendChild(tr);
 }
 
 function delCompRow(i) { document.getElementById('comp-row-'+i)?.remove(); }
 
 async function saveComp() {
   const p = getPerso(); if (!p) return;
-  const rows = document.querySelectorAll('#comp-edit-rows .edit-row');
-  p.competences = Array.from(rows).map(row => {
+  const rows = document.querySelectorAll('#comp-edit-rows tr');
+  p.competences = Array.from(rows).map((row,i) => {
     const inputs = row.querySelectorAll('input');
-    const nom = inputs[0].value.trim();
-    const rang = parseInt(inputs[1].value)||0;
-    const mod_carac = parseInt(inputs[2].value)||0;
-    const classe = inputs[3].checked;
-    const total = rang + mod_carac + (classe ? 3 : 0);
-    return { nom, rang, mod_carac, classe, total };
+    const nom       = inputs[0]?.value.trim()||'';
+    const rang      = parseInt(inputs[1]?.value)||0;
+    const mod_carac = parseInt(inputs[2]?.value)||0;
+    const classe    = inputs[3]?.checked||false;
+    const autre     = parseInt(inputs[4]?.value)||0;
+    const total     = rang + mod_carac + (classe?3:0) + autre;
+    return { nom, rang, mod_carac, classe, autre, total };
   }).filter(c => c.nom);
   if (await saveToSupabase(p)) { setSection('competences'); }
 }
