@@ -262,6 +262,38 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .empty-glyph { font-family:var(--ffd); font-size:3rem; color:var(--border2); }
 .empty-title { font-family:var(--ff); font-size:1rem; color:var(--textdim); letter-spacing:0.08em; }
 .empty-sub { color:var(--textdim); font-size:0.9rem; max-width:280px; }
+
+/* ===== EDIT MODE ===== */
+.edit-bar { display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+.btn-edit { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.3rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; }
+.btn-edit:hover { background:var(--golddim); }
+.btn-save { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.3rem 0.8rem; background:var(--green); color:#fff; border:1px solid var(--green); cursor:pointer; transition:all 0.2s; }
+.btn-save:hover { background:var(--green2); }
+.btn-cancel { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.3rem 0.7rem; background:transparent; color:var(--textdim); border:1px solid var(--border2); cursor:pointer; transition:all 0.2s; }
+.btn-cancel:hover { color:var(--text); border-color:var(--text); }
+.btn-add { font-family:var(--ffm); font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.25rem 0.6rem; background:transparent; color:var(--blue2); border:1px solid var(--blue); cursor:pointer; transition:all 0.2s; }
+.btn-add:hover { background:var(--bluebg); }
+.btn-del { font-family:var(--ffm); font-size:0.6rem; padding:0.2rem 0.45rem; background:transparent; color:var(--red2); border:1px solid var(--red); cursor:pointer; transition:all 0.2s; line-height:1; }
+.btn-del:hover { background:var(--redbg); }
+.edit-input { background:var(--bg3); border:1px solid var(--border2); color:var(--text); padding:0.35rem 0.5rem; font-family:var(--ffs); font-size:0.9rem; outline:none; width:100%; transition:border-color 0.2s; }
+.edit-input:focus { border-color:var(--gold); }
+.edit-input-sm { width:70px; text-align:center; }
+.edit-input-xs { width:50px; text-align:center; }
+.edit-row { display:flex; gap:0.5rem; align-items:center; padding:0.4rem 0; border-bottom:1px solid rgba(37,42,80,0.25); flex-wrap:wrap; }
+.edit-label { font-family:var(--ffm); font-size:0.56rem; color:var(--textdim); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.2rem; display:block; }
+.panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.panel-header .panel-title { margin-bottom:0; border-bottom:none; padding-bottom:0; }
+.panel-title-wrap { border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:1rem; }
+.stat-edit-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:0.5rem; }
+.stat-edit-cell { text-align:center; }
+.stat-edit-cell label { font-family:var(--ffm); font-size:0.58rem; color:var(--textdim); letter-spacing:0.15em; display:block; margin-bottom:0.3rem; }
+.stat-edit-cell input { width:100%; background:var(--bg3); border:1px solid var(--border2); color:var(--textgold); padding:0.5rem 0.2rem; font-family:var(--ffd); font-size:1rem; text-align:center; outline:none; }
+.stat-edit-cell input:focus { border-color:var(--gold); }
+.richesse-edit-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; }
+.richesse-edit-cell { text-align:center; }
+.richesse-edit-cell label { font-family:var(--ffm); font-size:0.52rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.3rem; }
+.pv-edit-row { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+.pv-edit-group { display:flex; flex-direction:column; gap:0.2rem; }
 </style>
 </head>
 <body>
@@ -628,18 +660,39 @@ function renderFiche() {
       <div class="fiche-tags">
         <span class="tag tag-niv">Niv. ${p.niveau||1}</span>
         <span class="tag tag-align">${p.alignement||'N'}</span>
-        <span class="tag tag-div">⚑ ${p.divinite||'—'}</span>
+        <span class="tag tag-div">&#9873; ${p.divinite||'—'}</span>
         <span class="tag tag-race">${race.nom||p.race_id||''}</span>
         <span class="tag tag-ed">${p.edition||''}</span>
       </div>
     </div>
-    <div class="stats-grid anim">
-      ${p.carac ? Object.entries(p.carac).map(([k,v]) => `
-        <div class="stat-box">
-          <span class="stat-abbr">${k}</span>
-          <span class="stat-base">${v.base}</span>
-          <span class="stat-mod ${v.mod>0?'mod-pos':v.mod<0?'mod-neg':'mod-zer'}">${ms(v.mod)}</span>
-        </div>`).join("") : ''}
+    <div class="panel-block anim" style="margin-bottom:1rem">
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Caracteristiques</span>
+        <button class="btn-edit" onclick="editCarac()">&#9998; Modifier</button>
+      </div>
+      <div id="carac-view">
+        <div class="stats-grid" style="margin-bottom:0">
+          ${p.carac ? Object.entries(p.carac).map(([k,v]) => `
+            <div class="stat-box">
+              <span class="stat-abbr">${k}</span>
+              <span class="stat-base">${v.base}</span>
+              <span class="stat-mod ${v.mod>0?'mod-pos':v.mod<0?'mod-neg':'mod-zer'}">${ms(v.mod)}</span>
+            </div>`).join("") : ''}
+        </div>
+      </div>
+      <div id="carac-edit" style="display:none">
+        <div class="stat-edit-grid" style="margin-bottom:0.8rem">
+          ${p.carac ? Object.entries(p.carac).map(([k,v]) => `
+            <div class="stat-edit-cell">
+              <label>${k}</label>
+              <input id="ec-${k}" type="number" min="3" max="30" value="${v.base}">
+            </div>`).join("") : ''}
+        </div>
+        <div class="edit-bar">
+          <button class="btn-save" onclick="saveCarac()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('carac')">Annuler</button>
+        </div>
+      </div>
     </div>
     <div class="section-tabs anim">
       ${["combat","compétences","équipement","capacités","description"].map(s => `
@@ -676,24 +729,51 @@ function renderSection(p, race, cl, s) {
 function renderCombat(p, race, cl) {
   const c = p.combats || {};
   const saves = cl.jets_forts||[];
-  const pvPct = c.pv_max ? Math.round((c.pv_actuel||c.pv_max)/c.pv_max*100) : 100;
+  const pvPct = c.pv_max ? Math.round(((c.pv_actuel??c.pv_max)||0)/c.pv_max*100) : 100;
   return `
     <div class="pv-wrap">
-      <div class="pv-header"><span class="pv-label">Points de Vie</span><span class="pv-val">${c.pv_actuel||c.pv_max||0} / ${c.pv_max||0}</span></div>
+      <div class="pv-header"><span class="pv-label">Points de Vie</span><span class="pv-val">${c.pv_actuel??c.pv_max??0} / ${c.pv_max||0}</span></div>
       <div class="pv-bar"><div class="pv-fill" style="width:${pvPct}%"></div></div>
     </div>
-    <div class="combat-grid">
-      <div class="cbox"><div class="cbox-label">CA totale</div><div class="cbox-val">${c.ca||10}</div><div class="cbox-sub">contact ${c.ca_contact||10} · surpris ${c.ca_surprise||10}</div></div>
-      <div class="cbox"><div class="cbox-label">BBA</div><div class="cbox-val">${ms(c.bba||1)}</div><div class="cbox-sub">progression forte</div></div>
-      <div class="cbox"><div class="cbox-label">BMO</div><div class="cbox-val">${ms(c.bmo||1)}</div><div class="cbox-sub">manœuvres offensives</div></div>
-      <div class="cbox"><div class="cbox-label">Initiative</div><div class="cbox-val">${ms(c.initiative||0)}</div><div class="cbox-sub">DEX ${p.carac?.DEX ? ms(p.carac.DEX.mod) : '0'}</div></div>
+    <div class="panel-block">
+      <div class="panel-title-wrap panel-header">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Points de Vie &amp; Combat</span>
+        <button class="btn-edit" onclick="editCombat()">&#9998; Modifier</button>
+      </div>
+      <div id="combat-view">
+        <div class="combat-grid" style="margin-bottom:0">
+          <div class="cbox"><div class="cbox-label">PV actuel</div><div class="cbox-val">${c.pv_actuel??c.pv_max??0}</div><div class="cbox-sub">/ ${c.pv_max||0} max</div></div>
+          <div class="cbox"><div class="cbox-label">CA totale</div><div class="cbox-val">${c.ca||10}</div><div class="cbox-sub">contact ${c.ca_contact||10} · surpris ${c.ca_surprise||10}</div></div>
+          <div class="cbox"><div class="cbox-label">BBA</div><div class="cbox-val">${ms(c.bba||1)}</div><div class="cbox-sub">progression forte</div></div>
+          <div class="cbox"><div class="cbox-label">Initiative</div><div class="cbox-val">${ms(c.initiative||0)}</div><div class="cbox-sub">DEX ${p.carac?.DEX ? ms(p.carac.DEX.mod) : '0'}</div></div>
+        </div>
+      </div>
+      <div id="combat-edit" style="display:none">
+        <div class="pv-edit-row">
+          <div class="pv-edit-group"><label class="edit-label">PV actuel</label><input class="edit-input edit-input-sm" id="e-pv-actuel" type="number" value="${c.pv_actuel??c.pv_max??0}"></div>
+          <div class="pv-edit-group"><label class="edit-label">PV max</label><input class="edit-input edit-input-sm" id="e-pv-max" type="number" value="${c.pv_max||0}"></div>
+          <div class="pv-edit-group"><label class="edit-label">CA</label><input class="edit-input edit-input-sm" id="e-ca" type="number" value="${c.ca||10}"></div>
+          <div class="pv-edit-group"><label class="edit-label">CA contact</label><input class="edit-input edit-input-sm" id="e-ca-contact" type="number" value="${c.ca_contact||10}"></div>
+          <div class="pv-edit-group"><label class="edit-label">CA surpris</label><input class="edit-input edit-input-sm" id="e-ca-surprise" type="number" value="${c.ca_surprise||10}"></div>
+          <div class="pv-edit-group"><label class="edit-label">BBA</label><input class="edit-input edit-input-sm" id="e-bba" type="number" value="${c.bba||1}"></div>
+          <div class="pv-edit-group"><label class="edit-label">BMO</label><input class="edit-input edit-input-sm" id="e-bmo" type="number" value="${c.bmo||1}"></div>
+          <div class="pv-edit-group"><label class="edit-label">Initiative</label><input class="edit-input edit-input-sm" id="e-init" type="number" value="${c.initiative||0}"></div>
+          <div class="pv-edit-group"><label class="edit-label">Vigueur</label><input class="edit-input edit-input-sm" id="e-vig" type="number" value="${c.saves?.vigueur||0}"></div>
+          <div class="pv-edit-group"><label class="edit-label">Reflexes</label><input class="edit-input edit-input-sm" id="e-ref" type="number" value="${c.saves?.reflexes||0}"></div>
+          <div class="pv-edit-group"><label class="edit-label">Volonte</label><input class="edit-input edit-input-sm" id="e-vol" type="number" value="${c.saves?.volonte||0}"></div>
+        </div>
+        <div class="edit-bar">
+          <button class="btn-save" onclick="saveCombat()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('combat')">Annuler</button>
+        </div>
+      </div>
     </div>
     <div class="panel-block">
       <div class="panel-title">Jets de Sauvegarde</div>
       <div class="saves-grid">
         <div class="sbox"><div class="sbox-label">Vigueur</div><div class="sbox-val">${ms(c.saves?.vigueur||0)}</div><div class="sbox-type ${saves.includes('Vigueur')?'fort':'faible'}">${saves.includes("Vigueur")?"FORT":"FAIBLE"}</div></div>
-        <div class="sbox"><div class="sbox-label">Réflexes</div><div class="sbox-val">${ms(c.saves?.reflexes||0)}</div><div class="sbox-type ${saves.includes('Réflexes')?'fort':'faible'}">${saves.includes("Réflexes")?"FORT":"FAIBLE"}</div></div>
-        <div class="sbox"><div class="sbox-label">Volonté</div><div class="sbox-val">${ms(c.saves?.volonte||0)}</div><div class="sbox-type ${saves.includes('Volonté')?'fort':'faible'}">${saves.includes("Volonté")?"FORT":"FAIBLE"}</div></div>
+        <div class="sbox"><div class="sbox-label">Reflexes</div><div class="sbox-val">${ms(c.saves?.reflexes||0)}</div><div class="sbox-type ${saves.includes('Reflexes')||saves.includes('R\xe9flexes')?'fort':'faible'}">${saves.includes("Reflexes")||saves.includes("R\xe9flexes")?"FORT":"FAIBLE"}</div></div>
+        <div class="sbox"><div class="sbox-label">Volonte</div><div class="sbox-val">${ms(c.saves?.volonte||0)}</div><div class="sbox-type ${saves.includes('Volonte')||saves.includes('Volong\xe9e')?'fort':'faible'}">${saves.includes("Volonte")||saves.includes("Volont\xe9")?"FORT":"FAIBLE"}</div></div>
       </div>
     </div>
     <div class="panel-block">
@@ -705,40 +785,141 @@ function renderCombat(p, race, cl) {
 function renderComp(p, cl) {
   return `
     <div class="panel-block">
-      <div class="panel-title">Compétences · ${(p.competences||[]).reduce((s,c)=>s+(c.rang||0),0)} rangs utilisés</div>
-      <table class="comp-table">
-        <thead><tr><th>Compétence</th><th>Rang</th><th>Carac.</th><th>Classe</th><th>Total</th></tr></thead>
-        <tbody>${(p.competences||[]).map(c => `<tr><td>${c.nom}</td><td>${c.rang}</td><td>${ms(c.mod_carac)}</td><td>${c.classe?'<span class="td-classe">✦ +3</span>':''}</td><td><span class="td-total">${ms(c.total)}</span></td></tr>`).join("")}</tbody>
-      </table>
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Competences · ${(p.competences||[]).reduce((s,c)=>s+(c.rang||0),0)} rangs</span>
+        <button class="btn-edit" onclick="editComp()">&#9998; Modifier</button>
+      </div>
+      <div id="comp-view">
+        <table class="comp-table">
+          <thead><tr><th>Competence</th><th>Rang</th><th>Carac.</th><th>Classe</th><th>Total</th></tr></thead>
+          <tbody>${(p.competences||[]).map((c,i) => `<tr><td>${c.nom}</td><td>${c.rang}</td><td>${ms(c.mod_carac)}</td><td>${c.classe?'<span class="td-classe">+3</span>':''}</td><td><span class="td-total">${ms(c.total)}</span></td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <div id="comp-edit" style="display:none">
+        <div id="comp-edit-rows">
+          ${(p.competences||[]).map((c,i) => `
+          <div class="edit-row" id="comp-row-${i}">
+            <input class="edit-input" style="flex:2;min-width:120px" placeholder="Nom" value="${c.nom||''}">
+            <div><label class="edit-label">Rang</label><input class="edit-input edit-input-xs" type="number" min="0" value="${c.rang||0}"></div>
+            <div><label class="edit-label">Mod.carac</label><input class="edit-input edit-input-xs" type="number" value="${c.mod_carac||0}"></div>
+            <div><label class="edit-label">Classe?</label><input type="checkbox" ${c.classe?'checked':''}></div>
+            <button class="btn-del" onclick="delCompRow(${i})">x</button>
+          </div>`).join("")}
+        </div>
+        <div class="edit-bar" style="margin-top:0.6rem">
+          <button class="btn-add" onclick="addCompRow()">+ Ajouter competence</button>
+          <button class="btn-save" onclick="saveComp()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('comp')">Annuler</button>
+        </div>
+      </div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Compétences de classe — ${cl.nom||''}</div>
+      <div class="panel-title">Competences de classe — ${cl.nom||''}</div>
       <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem">${(cl.competences||[]).map(c => `<span class="tag tag-align" style="font-family:var(--ffs);text-transform:none;font-size:.82rem">${c}</span>`).join("")}</div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Dons</div>
-      ${(p.dons||[]).map(d => `<div class="don-item"><span class="don-icon">⬡</span><span>${d}</span></div>`).join("")}
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Dons</span>
+        <button class="btn-edit" onclick="editDons()">&#9998; Modifier</button>
+      </div>
+      <div id="dons-view">
+        ${(p.dons||[]).map(d => `<div class="don-item"><span class="don-icon">⬡</span><span>${d}</span></div>`).join("")}
+      </div>
+      <div id="dons-edit" style="display:none">
+        <div id="dons-edit-rows">
+          ${(p.dons||[]).map((d,i) => `
+          <div class="edit-row" id="don-row-${i}">
+            <input class="edit-input" style="flex:1" placeholder="Nom du don" value="${d||''}">
+            <button class="btn-del" onclick="delDonRow(${i})">x</button>
+          </div>`).join("")}
+        </div>
+        <div class="edit-bar" style="margin-top:0.6rem">
+          <button class="btn-add" onclick="addDonRow()">+ Ajouter don</button>
+          <button class="btn-save" onclick="saveDons()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('dons')">Annuler</button>
+        </div>
+      </div>
     </div>`;
 }
 
 function renderEquip(p) {
   return `
     <div class="panel-block">
-      <div class="panel-title">Armes</div>
-      ${(p.armes||[]).map(a => `<div class="arme-row"><div class="arme-nom">⚔ ${a.nom} <span style="font-family:var(--ffm);font-size:.6rem;color:var(--textdim);margin-left:.5rem">${a.type}</span></div><div class="arme-stat"><div class="arme-stat-l">Toucher</div><div class="arme-stat-v">${a.toucher}</div></div><div class="arme-stat"><div class="arme-stat-l">Dégâts</div><div class="arme-stat-v">${a.degats}</div></div><div class="arme-stat"><div class="arme-stat-l">Critique</div><div class="arme-stat-v">${a.crit}</div></div></div>`).join("")}
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Armes</span>
+        <button class="btn-edit" onclick="editArmes()">&#9998; Modifier</button>
+      </div>
+      <div id="armes-view">
+        ${(p.armes||[]).map(a => `<div class="arme-row"><div class="arme-nom">&#9876; ${a.nom} <span style="font-family:var(--ffm);font-size:.6rem;color:var(--textdim);margin-left:.5rem">${a.type||''}</span></div><div class="arme-stat"><div class="arme-stat-l">Toucher</div><div class="arme-stat-v">${a.toucher||0}</div></div><div class="arme-stat"><div class="arme-stat-l">Degats</div><div class="arme-stat-v">${a.degats||'1d4'}</div></div><div class="arme-stat"><div class="arme-stat-l">Critique</div><div class="arme-stat-v">${a.crit||'x2'}</div></div></div>`).join("")}
+      </div>
+      <div id="armes-edit" style="display:none">
+        <div id="armes-edit-rows">
+          ${(p.armes||[]).map((a,i) => `
+          <div class="edit-row" id="arme-row-${i}">
+            <input class="edit-input" style="flex:2;min-width:110px" placeholder="Nom" value="${a.nom||''}">
+            <div><label class="edit-label">Type</label><input class="edit-input edit-input-sm" placeholder="Corps-à-corps" value="${a.type||''}"></div>
+            <div><label class="edit-label">Toucher</label><input class="edit-input edit-input-xs" value="${a.toucher||0}"></div>
+            <div><label class="edit-label">Degats</label><input class="edit-input edit-input-sm" value="${a.degats||'1d6'}"></div>
+            <div><label class="edit-label">Crit</label><input class="edit-input edit-input-xs" value="${a.crit||'x2'}"></div>
+            <button class="btn-del" onclick="delArmeRow(${i})">x</button>
+          </div>`).join("")}
+        </div>
+        <div class="edit-bar" style="margin-top:0.6rem">
+          <button class="btn-add" onclick="addArmeRow()">+ Ajouter arme</button>
+          <button class="btn-save" onclick="saveArmes()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('armes')">Annuler</button>
+        </div>
+      </div>
     </div>
     <div class="two-col">
       <div class="panel-block">
-        <div class="panel-title">Inventaire · ${p.charge_actuelle||0}/${p.charge_max||0} kg</div>
-        ${(p.inventaire||[]).map(i => `<div class="inv-row"><span>${i.nom}</span><span class="inv-poids">${i.poids} kg</span></div>`).join("")}
+        <div class="panel-header panel-title-wrap">
+          <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Inventaire · ${p.charge_actuelle||0}/${p.charge_max||0} kg</span>
+          <button class="btn-edit" onclick="editInv()">&#9998; Modifier</button>
+        </div>
+        <div id="inv-view">
+          ${(p.inventaire||[]).map(i => `<div class="inv-row"><span>${i.nom}</span><span class="inv-poids">${i.poids} kg</span></div>`).join("")}
+        </div>
+        <div id="inv-edit" style="display:none">
+          <div id="inv-edit-rows">
+            ${(p.inventaire||[]).map((it,i) => `
+            <div class="edit-row" id="inv-row-${i}">
+              <input class="edit-input" style="flex:2" placeholder="Nom de l'item" value="${it.nom||''}">
+              <div><label class="edit-label">Poids(kg)</label><input class="edit-input edit-input-xs" type="number" min="0" step="0.1" value="${it.poids||0}"></div>
+              <button class="btn-del" onclick="delInvRow(${i})">x</button>
+            </div>`).join("")}
+          </div>
+          <div class="edit-bar" style="margin-top:0.5rem">
+            <button class="btn-add" onclick="addInvRow()">+ Ajouter item</button>
+            <button class="btn-save" onclick="saveInv()">Valider</button>
+            <button class="btn-cancel" onclick="cancelEdit('inv')">Annuler</button>
+          </div>
+        </div>
       </div>
       <div class="panel-block">
-        <div class="panel-title">Richesses</div>
-        <div class="richesses-grid">
-          <div class="rbox rbox-pp"><div class="rbox-label">Platine</div><div class="rbox-val">${p.richesses?.pp||0}</div></div>
-          <div class="rbox rbox-po"><div class="rbox-label">Or</div><div class="rbox-val">${p.richesses?.po||0}</div></div>
-          <div class="rbox rbox-pa"><div class="rbox-label">Argent</div><div class="rbox-val">${p.richesses?.pa||0}</div></div>
-          <div class="rbox rbox-pc"><div class="rbox-label">Cuivre</div><div class="rbox-val">${p.richesses?.pc||0}</div></div>
+        <div class="panel-header panel-title-wrap">
+          <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Richesses</span>
+          <button class="btn-edit" onclick="editRichesse()">&#9998; Modifier</button>
+        </div>
+        <div id="richesse-view">
+          <div class="richesses-grid">
+            <div class="rbox rbox-pp"><div class="rbox-label">Platine</div><div class="rbox-val">${p.richesses?.pp||0}</div></div>
+            <div class="rbox rbox-po"><div class="rbox-label">Or</div><div class="rbox-val">${p.richesses?.po||0}</div></div>
+            <div class="rbox rbox-pa"><div class="rbox-label">Argent</div><div class="rbox-val">${p.richesses?.pa||0}</div></div>
+            <div class="rbox rbox-pc"><div class="rbox-label">Cuivre</div><div class="rbox-val">${p.richesses?.pc||0}</div></div>
+          </div>
+        </div>
+        <div id="richesse-edit" style="display:none">
+          <div class="richesse-edit-grid">
+            <div class="richesse-edit-cell"><label class="edit-label" style="color:#b0c0d0">Platine</label><input class="edit-input" id="e-pp" type="number" min="0" value="${p.richesses?.pp||0}"></div>
+            <div class="richesse-edit-cell"><label class="edit-label" style="color:var(--gold2)">Or</label><input class="edit-input" id="e-po" type="number" min="0" value="${p.richesses?.po||0}"></div>
+            <div class="richesse-edit-cell"><label class="edit-label" style="color:#a0b0c0">Argent</label><input class="edit-input" id="e-pa" type="number" min="0" value="${p.richesses?.pa||0}"></div>
+            <div class="richesse-edit-cell"><label class="edit-label" style="color:#b07040">Cuivre</label><input class="edit-input" id="e-pc" type="number" min="0" value="${p.richesses?.pc||0}"></div>
+          </div>
+          <div class="edit-bar" style="margin-top:0.6rem">
+            <button class="btn-save" onclick="saveRichesse()">Valider</button>
+            <button class="btn-cancel" onclick="cancelEdit('richesse')">Annuler</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -766,22 +947,40 @@ function renderDesc(p) {
   const xpPct = p.xp_niveau_suivant ? Math.round((p.xp_actuel||0)/p.xp_niveau_suivant*100) : 0;
   return `
     <div class="panel-block">
-      <div class="panel-title">Apparence physique</div>
-      <div class="desc-grid">
-        <div class="dbox"><div class="dbox-label">Âge</div><div class="dbox-val">${d.age||'?'} ans</div></div>
-        <div class="dbox"><div class="dbox-label">Taille</div><div class="dbox-val">${d.taille||'?'} cm</div></div>
-        <div class="dbox"><div class="dbox-label">Poids</div><div class="dbox-val">${d.poids||'?'} kg</div></div>
-        <div class="dbox"><div class="dbox-label">Cheveux</div><div class="dbox-val">${d.cheveux||'?'}</div></div>
-        <div class="dbox"><div class="dbox-label">Yeux</div><div class="dbox-val">${d.yeux||'?'}</div></div>
-        <div class="dbox"><div class="dbox-label">Peau</div><div class="dbox-val">${d.peau||'?'}</div></div>
+      <div class="panel-header panel-title-wrap">
+        <span class="panel-title" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Apparence &amp; Historique</span>
+        <button class="btn-edit" onclick="editDesc()">&#9998; Modifier</button>
+      </div>
+      <div id="desc-view">
+        <div class="desc-grid">
+          <div class="dbox"><div class="dbox-label">Age</div><div class="dbox-val">${d.age||'?'} ans</div></div>
+          <div class="dbox"><div class="dbox-label">Taille</div><div class="dbox-val">${d.taille||'?'} cm</div></div>
+          <div class="dbox"><div class="dbox-label">Poids</div><div class="dbox-val">${d.poids||'?'} kg</div></div>
+          <div class="dbox"><div class="dbox-label">Cheveux</div><div class="dbox-val">${d.cheveux||'?'}</div></div>
+          <div class="dbox"><div class="dbox-label">Yeux</div><div class="dbox-val">${d.yeux||'?'}</div></div>
+          <div class="dbox"><div class="dbox-label">Peau</div><div class="dbox-val">${d.peau||'?'}</div></div>
+        </div>
+        <div class="background-block" style="margin-top:0.8rem">"${p.background||'Origines inconnues.'}"</div>
+      </div>
+      <div id="desc-edit" style="display:none">
+        <div class="desc-grid" style="margin-bottom:0.8rem">
+          <div><label class="edit-label">Age</label><input class="edit-input" id="ed-age" type="number" value="${d.age||25}"></div>
+          <div><label class="edit-label">Taille (cm)</label><input class="edit-input" id="ed-taille" type="number" value="${d.taille||170}"></div>
+          <div><label class="edit-label">Poids (kg)</label><input class="edit-input" id="ed-poids" type="number" value="${d.poids||70}"></div>
+          <div><label class="edit-label">Cheveux</label><input class="edit-input" id="ed-cheveux" value="${d.cheveux||''}"></div>
+          <div><label class="edit-label">Yeux</label><input class="edit-input" id="ed-yeux" value="${d.yeux||''}"></div>
+          <div><label class="edit-label">Peau</label><input class="edit-input" id="ed-peau" value="${d.peau||''}"></div>
+        </div>
+        <div style="margin-bottom:0.6rem"><label class="edit-label">Historique</label><textarea class="edit-input" id="ed-bg" rows="3" style="resize:vertical">${p.background||''}</textarea></div>
+        <div style="margin-bottom:0.6rem"><label class="edit-label">XP actuel</label><input class="edit-input edit-input-sm" id="ed-xp" type="number" min="0" value="${p.xp_actuel||0}"></div>
+        <div class="edit-bar">
+          <button class="btn-save" onclick="saveDesc()">Valider</button>
+          <button class="btn-cancel" onclick="cancelEdit('desc')">Annuler</button>
+        </div>
       </div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Historique</div>
-      <div class="background-block">"${p.background||'Origines inconnues.'}"</div>
-    </div>
-    <div class="panel-block">
-      <div class="panel-title">Expérience</div>
+      <div class="panel-title">Experience</div>
       <div class="xp-wrap">
         <div class="xp-header"><span>XP actuel : ${p.xp_actuel||0}</span><span>Niveau suivant : ${p.xp_niveau_suivant||1000}</span></div>
         <div class="xp-bar"><div class="xp-fill" style="width:${xpPct}%"></div></div>
@@ -910,6 +1109,224 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ===== EDIT HELPERS =====
+function getPerso() { return PERSONNAGES.find(x => (x._db_id||x.id) === selectedId); }
+
+function cancelEdit(section) {
+  document.getElementById(section+'-edit').style.display = 'none';
+  document.getElementById(section+'-view').style.display = '';
+}
+
+async function saveToSupabase(perso) {
+  const { error } = await sb.from('personnages').update({ data_json: perso }).eq('id', perso._db_id);
+  if (error) { toast('Erreur sauvegarde : ' + error.message); return false; }
+  toast('Sauvegarde effectuee !');
+  return true;
+}
+
+// ===== CARAC =====
+function editCarac() {
+  document.getElementById('carac-view').style.display = 'none';
+  document.getElementById('carac-edit').style.display = '';
+}
+
+async function saveCarac() {
+  const p = getPerso(); if (!p) return;
+  if (!p.carac) p.carac = {};
+  const stats = ['FOR','DEX','CON','INT','SAG','CHA'];
+  stats.forEach(k => {
+    const el = document.getElementById('ec-'+k); if (!el) return;
+    const base = Math.max(3, Math.min(30, parseInt(el.value)||10));
+    const modVal = Math.floor((base-10)/2);
+    p.carac[k] = { base, mod: modVal };
+  });
+  if (await saveToSupabase(p)) { renderFiche(); }
+}
+
+// ===== COMBAT =====
+function editCombat() {
+  document.getElementById('combat-view').style.display = 'none';
+  document.getElementById('combat-edit').style.display = '';
+}
+
+async function saveCombat() {
+  const p = getPerso(); if (!p) return;
+  if (!p.combats) p.combats = {};
+  if (!p.combats.saves) p.combats.saves = {};
+  p.combats.pv_actuel = parseInt(document.getElementById('e-pv-actuel').value)||0;
+  p.combats.pv_max    = parseInt(document.getElementById('e-pv-max').value)||0;
+  p.combats.ca        = parseInt(document.getElementById('e-ca').value)||10;
+  p.combats.ca_contact= parseInt(document.getElementById('e-ca-contact').value)||10;
+  p.combats.ca_surprise=parseInt(document.getElementById('e-ca-surprise').value)||10;
+  p.combats.bba       = parseInt(document.getElementById('e-bba').value)||1;
+  p.combats.bmo       = parseInt(document.getElementById('e-bmo').value)||1;
+  p.combats.initiative= parseInt(document.getElementById('e-init').value)||0;
+  p.combats.saves.vigueur  = parseInt(document.getElementById('e-vig').value)||0;
+  p.combats.saves.reflexes = parseInt(document.getElementById('e-ref').value)||0;
+  p.combats.saves.volonte  = parseInt(document.getElementById('e-vol').value)||0;
+  if (await saveToSupabase(p)) { renderFiche(); }
+}
+
+// ===== COMPETENCES =====
+function editComp() {
+  document.getElementById('comp-view').style.display = 'none';
+  document.getElementById('comp-edit').style.display = '';
+}
+
+function addCompRow() {
+  const container = document.getElementById('comp-edit-rows');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'edit-row'; div.id = 'comp-row-'+i;
+  div.innerHTML = `<input class="edit-input" style="flex:2;min-width:120px" placeholder="Nom">
+    <div><label class="edit-label">Rang</label><input class="edit-input edit-input-xs" type="number" min="0" value="0"></div>
+    <div><label class="edit-label">Mod.carac</label><input class="edit-input edit-input-xs" type="number" value="0"></div>
+    <div><label class="edit-label">Classe?</label><input type="checkbox"></div>
+    <button class="btn-del" onclick="this.closest('.edit-row').remove()">x</button>`;
+  container.appendChild(div);
+}
+
+function delCompRow(i) { document.getElementById('comp-row-'+i)?.remove(); }
+
+async function saveComp() {
+  const p = getPerso(); if (!p) return;
+  const rows = document.querySelectorAll('#comp-edit-rows .edit-row');
+  p.competences = Array.from(rows).map(row => {
+    const inputs = row.querySelectorAll('input');
+    const nom = inputs[0].value.trim();
+    const rang = parseInt(inputs[1].value)||0;
+    const mod_carac = parseInt(inputs[2].value)||0;
+    const classe = inputs[3].checked;
+    const total = rang + mod_carac + (classe ? 3 : 0);
+    return { nom, rang, mod_carac, classe, total };
+  }).filter(c => c.nom);
+  if (await saveToSupabase(p)) { setSection('competences'); }
+}
+
+// ===== DONS =====
+function editDons() {
+  document.getElementById('dons-view').style.display = 'none';
+  document.getElementById('dons-edit').style.display = '';
+}
+
+function addDonRow() {
+  const container = document.getElementById('dons-edit-rows');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'edit-row'; div.id = 'don-row-'+i;
+  div.innerHTML = `<input class="edit-input" style="flex:1" placeholder="Nom du don">
+    <button class="btn-del" onclick="this.closest('.edit-row').remove()">x</button>`;
+  container.appendChild(div);
+}
+
+function delDonRow(i) { document.getElementById('don-row-'+i)?.remove(); }
+
+async function saveDons() {
+  const p = getPerso(); if (!p) return;
+  const rows = document.querySelectorAll('#dons-edit-rows .edit-row');
+  p.dons = Array.from(rows).map(row => row.querySelector('input').value.trim()).filter(Boolean);
+  if (await saveToSupabase(p)) { setSection('competences'); }
+}
+
+// ===== ARMES =====
+function editArmes() {
+  document.getElementById('armes-view').style.display = 'none';
+  document.getElementById('armes-edit').style.display = '';
+}
+
+function addArmeRow() {
+  const container = document.getElementById('armes-edit-rows');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'edit-row'; div.id = 'arme-row-'+i;
+  div.innerHTML = `<input class="edit-input" style="flex:2;min-width:110px" placeholder="Nom">
+    <div><label class="edit-label">Type</label><input class="edit-input edit-input-sm" placeholder="Corps-a-corps" value=""></div>
+    <div><label class="edit-label">Toucher</label><input class="edit-input edit-input-xs" value="+0"></div>
+    <div><label class="edit-label">Degats</label><input class="edit-input edit-input-sm" value="1d6"></div>
+    <div><label class="edit-label">Crit</label><input class="edit-input edit-input-xs" value="x2"></div>
+    <button class="btn-del" onclick="this.closest('.edit-row').remove()">x</button>`;
+  container.appendChild(div);
+}
+
+function delArmeRow(i) { document.getElementById('arme-row-'+i)?.remove(); }
+
+async function saveArmes() {
+  const p = getPerso(); if (!p) return;
+  const rows = document.querySelectorAll('#armes-edit-rows .edit-row');
+  p.armes = Array.from(rows).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { nom: inputs[0].value.trim(), type: inputs[1].value.trim(), toucher: inputs[2].value.trim(), degats: inputs[3].value.trim(), crit: inputs[4].value.trim() };
+  }).filter(a => a.nom);
+  if (await saveToSupabase(p)) { setSection('equipement'); }
+}
+
+// ===== INVENTAIRE =====
+function editInv() {
+  document.getElementById('inv-view').style.display = 'none';
+  document.getElementById('inv-edit').style.display = '';
+}
+
+function addInvRow() {
+  const container = document.getElementById('inv-edit-rows');
+  const i = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'edit-row'; div.id = 'inv-row-'+i;
+  div.innerHTML = `<input class="edit-input" style="flex:2" placeholder="Nom de l'item">
+    <div><label class="edit-label">Poids(kg)</label><input class="edit-input edit-input-xs" type="number" min="0" step="0.1" value="0"></div>
+    <button class="btn-del" onclick="this.closest('.edit-row').remove()">x</button>`;
+  container.appendChild(div);
+}
+
+function delInvRow(i) { document.getElementById('inv-row-'+i)?.remove(); }
+
+async function saveInv() {
+  const p = getPerso(); if (!p) return;
+  const rows = document.querySelectorAll('#inv-edit-rows .edit-row');
+  p.inventaire = Array.from(rows).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { nom: inputs[0].value.trim(), poids: parseFloat(inputs[1].value)||0 };
+  }).filter(i => i.nom);
+  p.charge_actuelle = p.inventaire.reduce((s,i) => s+(i.poids||0), 0);
+  if (await saveToSupabase(p)) { setSection('equipement'); }
+}
+
+// ===== RICHESSE =====
+function editRichesse() {
+  document.getElementById('richesse-view').style.display = 'none';
+  document.getElementById('richesse-edit').style.display = '';
+}
+
+async function saveRichesse() {
+  const p = getPerso(); if (!p) return;
+  p.richesses = {
+    pp: parseInt(document.getElementById('e-pp').value)||0,
+    po: parseInt(document.getElementById('e-po').value)||0,
+    pa: parseInt(document.getElementById('e-pa').value)||0,
+    pc: parseInt(document.getElementById('e-pc').value)||0,
+  };
+  if (await saveToSupabase(p)) { setSection('equipement'); }
+}
+
+// ===== DESCRIPTION EDIT =====
+function editDesc() {
+  document.getElementById('desc-view').style.display = 'none';
+  document.getElementById('desc-edit').style.display = '';
+}
+
+async function saveDesc() {
+  const p = getPerso(); if (!p) return;
+  if (!p.description) p.description = {};
+  p.description.age     = parseInt(document.getElementById('ed-age').value)||25;
+  p.description.taille  = parseInt(document.getElementById('ed-taille').value)||170;
+  p.description.poids   = parseInt(document.getElementById('ed-poids').value)||70;
+  p.description.cheveux = document.getElementById('ed-cheveux').value.trim();
+  p.description.yeux    = document.getElementById('ed-yeux').value.trim();
+  p.description.peau    = document.getElementById('ed-peau').value.trim();
+  p.background          = document.getElementById('ed-bg').value.trim();
+  p.xp_actuel           = parseInt(document.getElementById('ed-xp').value)||0;
+  if (await saveToSupabase(p)) { setSection('description'); }
 }
 
 // ===== INIT =====
