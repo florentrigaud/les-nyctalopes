@@ -33,6 +33,19 @@ Option B (runtime): injecter avant `src/js/config.global.js`:
 - Auth email/mot de passe via Supabase
 - Creation/modification de fiches
 - Ecran admin avec verification stricte du role admin
+- Mode debug UI via `?debug=1` (logs console cibles)
+
+## Etat Actuel (Surface)
+- Sprint 1: extraction config Supabase + suppression des credentials hardcodes.
+- Sprint 2: garde-fous UI/formulaires + debug leger + corrections formulaire de modification.
+
+## QA Rapide
+Checks manuels/headless executes:
+1. Message explicite si config Supabase absente.
+2. Chargement des helpers debug en mode `?debug=1`.
+3. Echappement HTML des valeurs dynamiques (`esc()`).
+4. Formulaire de modification Competences robuste.
+5. Formulaire de modification Description robuste.
 
 ## Controle securite
 Voir `SECURITY_CHECKLIST.md`.

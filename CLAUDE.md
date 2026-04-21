@@ -8,6 +8,7 @@ This repository is a static web app for Pathfinder character sheets ("Les Nyctal
   - Contains most UI, CSS, and JS inline (single-file app, ~1400 lines).
   - Uses Supabase JS SDK from CDN.
   - Loads shared runtime config from `src/js/config.global.js`.
+  - Includes lightweight debug helpers (`?debug=1`, `handleUiError`, safe input readers).
   - Handles auth, character CRUD, and in-app editing flows directly in inline functions.
 - Admin app: `admin.html`
   - Loads `src/css/style.css`.
@@ -42,6 +43,7 @@ Auth flows use Supabase email/password (`signInWithPassword`, `signUp`, `signOut
 - Keep naming and labels in French to match existing UX.
 - Preserve visual tokens and CSS variable system unless a full theme refactor is requested.
 - If migrating to modular JS/CSS, do it intentionally as a full step (do not leave half-inline/half-module drift).
+- When injecting dynamic values in `innerHTML`, escape user-provided content first (use `esc()` pattern).
 
 ## Known Risks / Debt
 - Significant logic duplication risk between inline app code and `src/js/*`.

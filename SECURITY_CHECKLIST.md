@@ -6,6 +6,7 @@
 - Deny admin page access by default when role verification fails.
 - Require `users.is_admin = true` before admin actions.
 - Re-check admin rights before every write action in admin flow.
+- Escape dynamic values rendered in HTML attributes/textarea content.
 
 ## Supabase RLS Baseline
 Apply strict Row Level Security policies before production.
