@@ -501,22 +501,68 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 
 <div class="toast" id="toast"></div>
 
-<!-- Supabase -->
-<script>
-  window.SUPABASE_URL = "https://vlkiigbekxpbcwqhkkma.supabase.co";
-  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsa2lpZ2Jla3hwYmN3cWhra21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDc4MzMsImV4cCI6MjA4OTU4MzgzM30.bIMuGXP70xZbryX9Lr_PwpwINNBurAzwfJI20kC39LE";
-</script>
+<script src="src/js/config.global.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
 // ===== SUPABASE CLIENT =====
-const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+const { supabaseUrl, supabaseKey } = window.getSupabaseConfig ? window.getSupabaseConfig() : { supabaseUrl: '', supabaseKey: '' };
+const sb = (window.hasSupabaseConfig && window.hasSupabaseConfig())
+  ? window.supabase.createClient(supabaseUrl, supabaseKey)
+  : null;
+const SUPABASE_READY = Boolean(sb);
 
 // ===== DATA (caches chargés depuis Supabase) =====
 let RACES = {};
 let CLASSES = {};
 
+function ensureSupabaseReady(showMessage = true) {
+  if (SUPABASE_READY) return true;
+  if (showMessage) {
+    toast('Configuration Supabase manquante. Configure APP_CONFIG ou localStorage.');
+  }
+  return false;
+}
+
+const DEBUG_MODE = new URLSearchParams(window.location.search).get('debug') === '1';
+
+function debugLog(...args) {
+  if (DEBUG_MODE) console.log('[debug]', ...args);
+}
+
+function handleUiError(context, error, userMessage = 'Erreur inattendue.') {
+  console.error(context, error);
+  debugLog('context:', context, 'error:', error?.message || error);
+  toast(userMessage);
+}
+
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function getInputValue(id, fallback = '') {
+  const el = document.getElementById(id);
+  if (!el) {
+    debugLog('Champ introuvable:', id);
+    return fallback;
+  }
+  return el.value;
+}
+
+function getIntValue(id, fallback = 0, min = null, max = null) {
+  const raw = parseInt(getInputValue(id, fallback), 10);
+  let value = Number.isFinite(raw) ? raw : fallback;
+  if (min !== null) value = Math.max(min, value);
+  if (max !== null) value = Math.min(max, value);
+  return value;
+}
+
 async function loadRacesEtClasses() {
+  if (!ensureSupabaseReady()) return;
   const [{ data: racesData, error: rErr }, { data: classesData, error: cErr }] = await Promise.all([
     sb.from('races').select('*'),
     sb.from('classes').select('*')
@@ -584,27 +630,42 @@ function setAuthMsg(msg, ok) {
 }
 
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  setAuthMsg('Connexion…', true);
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) { setAuthMsg('❌ ' + error.message, false); return; }
-  onLogin(data.user);
+  if (!ensureSupabaseReady()) { setAuthMsg('Configuration Supabase manquante.', false); return; }
+  try {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    setAuthMsg('Connexion…', true);
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { setAuthMsg('❌ ' + error.message, false); return; }
+    debugLog('login success', data?.user?.id);
+    onLogin(data.user);
+  } catch (error) {
+    handleUiError('doLogin', error, 'Erreur de connexion.');
+    setAuthMsg('❌ Erreur de connexion.', false);
+  }
 }
 
 async function doRegister() {
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  const confirm = document.getElementById('reg-confirm').value;
-  if (password !== confirm) { setAuthMsg('❌ Les mots de passe ne correspondent pas.', false); return; }
-  setAuthMsg('Création du compte…', true);
-  const { data, error } = await sb.auth.signUp({ email, password });
-  if (error) { setAuthMsg('❌ ' + error.message, false); return; }
-  setAuthMsg('✅ Compte créé ! Connectez-vous.', true);
-  showAuthTab('login');
+  if (!ensureSupabaseReady()) { setAuthMsg('Configuration Supabase manquante.', false); return; }
+  try {
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirm = document.getElementById('reg-confirm').value;
+    if (password !== confirm) { setAuthMsg('❌ Les mots de passe ne correspondent pas.', false); return; }
+    setAuthMsg('Création du compte…', true);
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) { setAuthMsg('❌ ' + error.message, false); return; }
+    debugLog('register success', data?.user?.id || email);
+    setAuthMsg('✅ Compte créé ! Connectez-vous.', true);
+    showAuthTab('login');
+  } catch (error) {
+    handleUiError('doRegister', error, 'Erreur de creation de compte.');
+    setAuthMsg('❌ Erreur de creation de compte.', false);
+  }
 }
 
 async function doSignOut() {
+  if (!ensureSupabaseReady(false)) return;
   await sb.auth.signOut();
   location.reload();
 }
@@ -621,6 +682,7 @@ async function onLogin(user) {
 
 // ===== LOAD PERSONNAGES FROM SUPABASE =====
 async function loadPersonnages() {
+  if (!ensureSupabaseReady()) return;
   const { data, error } = await sb.from('personnages').select('*').eq('user_id', currentUser.id);
   if (error) { toast('Erreur chargement : ' + error.message); return; }
   PERSONNAGES = (data || []).map(row => {
@@ -705,7 +767,7 @@ function renderFiche() {
           <div class="niveau-edit-group"><label class="edit-label">XP prochain niv.</label><input class="edit-input edit-input-sm" id="en-xpnext" type="number" min="1" value="${p.xp_niveau_suivant||1000}"></div>
           <div class="niveau-edit-group"><label class="edit-label">Alignement</label>
             <select class="edit-input" id="en-align" style="width:80px">
-              ${["LB","NB","CB","LN","N","CN","LM","NM","CM"].map(a=>\`<option value="\${a}" \${(p.alignement||"N")===a?"selected":""}>\${a}</option>\`).join("")}
+              ${["LB","NB","CB","LN","N","CN","LM","NM","CM"].map(a=>`<option value="${a}" ${(p.alignement||"N")===a?"selected":""}>${a}</option>`).join("")}
             </select>
           </div>
           <div class="niveau-edit-group"><label class="edit-label">Divinite</label><input class="edit-input" id="en-div" style="width:120px" value="${p.divinite||'—'}"></div>
@@ -848,7 +910,7 @@ function renderComp(p, cl) {
   const totalRangs = comps.reduce((s,c) => s+(c.rang||0), 0);
   const compRows = comps.map((c,i) => `
     <tr>
-      <td>${c.nom||''}</td>
+      <td>${esc(c.nom||'')}</td>
       <td class="td-total">${ms(c.total||0)}</td>
       <td>${c.rang||0}</td>
       <td>${ms(c.mod_carac||0)}</td>
@@ -858,7 +920,7 @@ function renderComp(p, cl) {
 
   const editRows = comps.map((c,i) => `
     <tr id="comp-row-${i}">
-      <td><input type="text" value="${c.nom||''}" placeholder="Nom..." oninput="calcCompRow(${i})"></td>
+      <td><input type="text" value="${esc(c.nom||'')}" placeholder="Nom..." oninput="calcCompRow(${i})"></td>
       <td class="comp-td-total" id="comp-total-${i}">${ms(c.total||0)}</td>
       <td><input type="number" value="${c.rang||0}" min="0" oninput="calcCompRow(${i})"></td>
       <td><input type="number" value="${c.mod_carac||0}" oninput="calcCompRow(${i})"></td>
@@ -907,7 +969,7 @@ function renderComp(p, cl) {
         <div id="dons-edit-rows">
           ${(p.dons||[]).map((d,i) => `
           <div class="edit-row" id="don-row-${i}">
-            <input class="edit-input" style="flex:1" placeholder="Nom du don" value="${d||''}">
+            <input class="edit-input" style="flex:1" placeholder="Nom du don" value="${esc(d||'')}">
             <button class="btn-del" onclick="delDonRow(${i})">x</button>
           </div>`).join('')}
         </div>
@@ -934,11 +996,11 @@ function renderEquip(p) {
         <div id="armes-edit-rows">
           ${(p.armes||[]).map((a,i) => `
           <div class="edit-row" id="arme-row-${i}">
-            <input class="edit-input" style="flex:2;min-width:110px" placeholder="Nom" value="${a.nom||''}">
-            <div><label class="edit-label">Type</label><input class="edit-input edit-input-sm" placeholder="Corps-à-corps" value="${a.type||''}"></div>
-            <div><label class="edit-label">Toucher</label><input class="edit-input edit-input-xs" value="${a.toucher||0}"></div>
-            <div><label class="edit-label">Degats</label><input class="edit-input edit-input-sm" value="${a.degats||'1d6'}"></div>
-            <div><label class="edit-label">Crit</label><input class="edit-input edit-input-xs" value="${a.crit||'x2'}"></div>
+            <input class="edit-input" style="flex:2;min-width:110px" placeholder="Nom" value="${esc(a.nom||'')}">
+            <div><label class="edit-label">Type</label><input class="edit-input edit-input-sm" placeholder="Corps-à-corps" value="${esc(a.type||'')}"></div>
+            <div><label class="edit-label">Toucher</label><input class="edit-input edit-input-xs" value="${esc(a.toucher||0)}"></div>
+            <div><label class="edit-label">Degats</label><input class="edit-input edit-input-sm" value="${esc(a.degats||'1d6')}"></div>
+            <div><label class="edit-label">Crit</label><input class="edit-input edit-input-xs" value="${esc(a.crit||'x2')}"></div>
             <button class="btn-del" onclick="delArmeRow(${i})">x</button>
           </div>`).join("")}
         </div>
@@ -962,7 +1024,7 @@ function renderEquip(p) {
           <div id="inv-edit-rows">
             ${(p.inventaire||[]).map((it,i) => `
             <div class="edit-row" id="inv-row-${i}">
-              <input class="edit-input" style="flex:2" placeholder="Nom de l'item" value="${it.nom||''}">
+              <input class="edit-input" style="flex:2" placeholder="Nom de l'item" value="${esc(it.nom||'')}">
               <div><label class="edit-label">Poids(kg)</label><input class="edit-input edit-input-xs" type="number" min="0" step="0.1" value="${it.poids||0}"></div>
               <button class="btn-del" onclick="delInvRow(${i})">x</button>
             </div>`).join("")}
@@ -1030,7 +1092,7 @@ function renderCapas(p, race, cl) {
         <div style="background:var(--bg3);border-left:3px solid var(--purple);padding:0.8rem 1rem;font-size:0.9rem;color:var(--textdim);white-space:pre-wrap;line-height:1.6">${notesLibres||'Aucune note. Cliquez Modifier pour ajouter.'}</div>
       </div>
       <div id="notes-edit" style="display:none">
-        <textarea class="edit-input" id="ed-notes" rows="6" style="resize:vertical;font-family:var(--ffs)">${notesLibres}</textarea>
+	        <textarea class="edit-input" id="ed-notes" rows="6" style="resize:vertical;font-family:var(--ffs)">${esc(notesLibres)}</textarea>
         <div class="edit-bar" style="margin-top:0.5rem">
           <button class="btn-save" onclick="saveNotes()">Valider</button>
           <button class="btn-cancel" onclick="cancelEdit('notes')">Annuler</button>
@@ -1053,22 +1115,22 @@ function renderDesc(p) {
           <div class="dbox"><div class="dbox-label">Age</div><div class="dbox-val">${d.age||'?'} ans</div></div>
           <div class="dbox"><div class="dbox-label">Taille</div><div class="dbox-val">${d.taille||'?'} cm</div></div>
           <div class="dbox"><div class="dbox-label">Poids</div><div class="dbox-val">${d.poids||'?'} kg</div></div>
-          <div class="dbox"><div class="dbox-label">Cheveux</div><div class="dbox-val">${d.cheveux||'?'}</div></div>
-          <div class="dbox"><div class="dbox-label">Yeux</div><div class="dbox-val">${d.yeux||'?'}</div></div>
-          <div class="dbox"><div class="dbox-label">Peau</div><div class="dbox-val">${d.peau||'?'}</div></div>
+          <div class="dbox"><div class="dbox-label">Cheveux</div><div class="dbox-val">${esc(d.cheveux||'?')}</div></div>
+          <div class="dbox"><div class="dbox-label">Yeux</div><div class="dbox-val">${esc(d.yeux||'?')}</div></div>
+          <div class="dbox"><div class="dbox-label">Peau</div><div class="dbox-val">${esc(d.peau||'?')}</div></div>
         </div>
-        <div class="background-block" style="margin-top:0.8rem">"${p.background||'Origines inconnues.'}"</div>
+        <div class="background-block" style="margin-top:0.8rem">"${esc(p.background||'Origines inconnues.')}"</div>
       </div>
       <div id="desc-edit" style="display:none">
         <div class="desc-grid" style="margin-bottom:0.8rem">
           <div><label class="edit-label">Age</label><input class="edit-input" id="ed-age" type="number" value="${d.age||25}"></div>
           <div><label class="edit-label">Taille (cm)</label><input class="edit-input" id="ed-taille" type="number" value="${d.taille||170}"></div>
           <div><label class="edit-label">Poids (kg)</label><input class="edit-input" id="ed-poids" type="number" value="${d.poids||70}"></div>
-          <div><label class="edit-label">Cheveux</label><input class="edit-input" id="ed-cheveux" value="${d.cheveux||''}"></div>
-          <div><label class="edit-label">Yeux</label><input class="edit-input" id="ed-yeux" value="${d.yeux||''}"></div>
-          <div><label class="edit-label">Peau</label><input class="edit-input" id="ed-peau" value="${d.peau||''}"></div>
+	          <div><label class="edit-label">Cheveux</label><input class="edit-input" id="ed-cheveux" value="${esc(d.cheveux||'')}"></div>
+	          <div><label class="edit-label">Yeux</label><input class="edit-input" id="ed-yeux" value="${esc(d.yeux||'')}"></div>
+	          <div><label class="edit-label">Peau</label><input class="edit-input" id="ed-peau" value="${esc(d.peau||'')}"></div>
         </div>
-        <div style="margin-bottom:0.6rem"><label class="edit-label">Historique</label><textarea class="edit-input" id="ed-bg" rows="3" style="resize:vertical">${p.background||''}</textarea></div>
+	        <div style="margin-bottom:0.6rem"><label class="edit-label">Historique</label><textarea class="edit-input" id="ed-bg" rows="3" style="resize:vertical">${esc(p.background||'')}</textarea></div>
         <div style="margin-bottom:0.6rem"><label class="edit-label">XP actuel</label><input class="edit-input edit-input-sm" id="ed-xp" type="number" min="0" value="${p.xp_actuel||0}"></div>
         <div class="edit-bar">
           <button class="btn-save" onclick="saveDesc()">Valider</button>
@@ -1147,6 +1209,7 @@ function updateCalc() {
 }
 
 async function creerPersonnage() {
+  if (!ensureSupabaseReady()) return;
   const nom = document.getElementById("f-nom")?.value?.trim();
   if (!nom) { toast("⚠ Entrez un nom de personnage"); return; }
   const raceKey = document.getElementById("f-race").value;
@@ -1221,6 +1284,7 @@ function onPvSlide(val, pvMax) {
   pvSaveTimer = setTimeout(() => savePvSlider(val), 1500);
 }
 async function savePvSlider(val) {
+  if (!ensureSupabaseReady(false)) return;
   const p = getPerso(); if (!p) return;
   if (!p.combats) p.combats = {};
   p.combats.pv_actuel = parseInt(val)||0;
@@ -1240,13 +1304,17 @@ function editNiveau() {
   document.getElementById('niveau-edit').style.display = '';
 }
 async function saveNiveau() {
-  const p = getPerso(); if (!p) return;
-  p.niveau             = parseInt(document.getElementById('en-niv').value)||1;
-  p.xp_actuel          = parseInt(document.getElementById('en-xp').value)||0;
-  p.xp_niveau_suivant  = parseInt(document.getElementById('en-xpnext').value)||1000;
-  p.alignement         = document.getElementById('en-align').value;
-  p.divinite           = document.getElementById('en-div').value.trim();
-  if (await saveToSupabase(p)) { renderFiche(); }
+  try {
+    const p = getPerso(); if (!p) return;
+    p.niveau             = getIntValue('en-niv', 1, 1);
+    p.xp_actuel          = getIntValue('en-xp', 0, 0);
+    p.xp_niveau_suivant  = getIntValue('en-xpnext', 1000, 1);
+    p.alignement         = getInputValue('en-align', p.alignement || 'N');
+    p.divinite           = getInputValue('en-div', p.divinite || '').trim();
+    if (await saveToSupabase(p)) { renderFiche(); }
+  } catch (error) {
+    handleUiError('saveNiveau', error, 'Erreur de validation du formulaire niveau.');
+  }
 }
 
 // ===== NOTES CAPACITES =====
@@ -1282,10 +1350,16 @@ function cancelEdit(section) {
 }
 
 async function saveToSupabase(perso) {
-  const { error } = await sb.from('personnages').update({ data_json: perso }).eq('id', perso._db_id);
-  if (error) { toast('Erreur sauvegarde : ' + error.message); return false; }
-  toast('Sauvegarde effectuee !');
-  return true;
+  if (!ensureSupabaseReady()) return false;
+  try {
+    const { error } = await sb.from('personnages').update({ data_json: perso }).eq('id', perso._db_id);
+    if (error) { toast('Erreur sauvegarde : ' + error.message); return false; }
+    toast('Sauvegarde effectuee !');
+    return true;
+  } catch (error) {
+    handleUiError('saveToSupabase', error, 'Erreur de sauvegarde.');
+    return false;
+  }
 }
 
 // ===== CARAC =====
@@ -1314,21 +1388,25 @@ function editCombat() {
 }
 
 async function saveCombat() {
-  const p = getPerso(); if (!p) return;
-  if (!p.combats) p.combats = {};
-  if (!p.combats.saves) p.combats.saves = {};
-  p.combats.pv_actuel = parseInt(document.getElementById('e-pv-actuel').value)||0;
-  p.combats.pv_max    = parseInt(document.getElementById('e-pv-max').value)||0;
-  p.combats.ca        = parseInt(document.getElementById('e-ca').value)||10;
-  p.combats.ca_contact= parseInt(document.getElementById('e-ca-contact').value)||10;
-  p.combats.ca_surprise=parseInt(document.getElementById('e-ca-surprise').value)||10;
-  p.combats.bba       = parseInt(document.getElementById('e-bba').value)||1;
-  p.combats.bmo       = parseInt(document.getElementById('e-bmo').value)||1;
-  p.combats.initiative= parseInt(document.getElementById('e-init').value)||0;
-  p.combats.saves.vigueur  = parseInt(document.getElementById('e-vig').value)||0;
-  p.combats.saves.reflexes = parseInt(document.getElementById('e-ref').value)||0;
-  p.combats.saves.volonte  = parseInt(document.getElementById('e-vol').value)||0;
-  if (await saveToSupabase(p)) { renderFiche(); }
+  try {
+    const p = getPerso(); if (!p) return;
+    if (!p.combats) p.combats = {};
+    if (!p.combats.saves) p.combats.saves = {};
+    p.combats.pv_actuel = getIntValue('e-pv-actuel', 0, 0);
+    p.combats.pv_max = getIntValue('e-pv-max', 0, 0);
+    p.combats.ca = getIntValue('e-ca', 10, 0);
+    p.combats.ca_contact = getIntValue('e-ca-contact', 10, 0);
+    p.combats.ca_surprise = getIntValue('e-ca-surprise', 10, 0);
+    p.combats.bba = getIntValue('e-bba', 1);
+    p.combats.bmo = getIntValue('e-bmo', 1);
+    p.combats.initiative = getIntValue('e-init', 0);
+    p.combats.saves.vigueur = getIntValue('e-vig', 0);
+    p.combats.saves.reflexes = getIntValue('e-ref', 0);
+    p.combats.saves.volonte = getIntValue('e-vol', 0);
+    if (await saveToSupabase(p)) { renderFiche(); }
+  } catch (error) {
+    handleUiError('saveCombat', error, 'Erreur de validation du formulaire combat.');
+  }
 }
 
 // ===== COMPETENCES =====
@@ -1482,23 +1560,31 @@ function editDesc() {
 }
 
 async function saveDesc() {
-  const p = getPerso(); if (!p) return;
-  if (!p.description) p.description = {};
-  p.description.age     = parseInt(document.getElementById('ed-age').value)||25;
-  p.description.taille  = parseInt(document.getElementById('ed-taille').value)||170;
-  p.description.poids   = parseInt(document.getElementById('ed-poids').value)||70;
-  p.description.cheveux = document.getElementById('ed-cheveux').value.trim();
-  p.description.yeux    = document.getElementById('ed-yeux').value.trim();
-  p.description.peau    = document.getElementById('ed-peau').value.trim();
-  p.background          = document.getElementById('ed-bg').value.trim();
-  p.xp_actuel           = parseInt(document.getElementById('ed-xp').value)||0;
-  if (await saveToSupabase(p)) { setSection('description'); }
+  try {
+    const p = getPerso(); if (!p) return;
+    if (!p.description) p.description = {};
+    p.description.age = getIntValue('ed-age', 25, 0);
+    p.description.taille = getIntValue('ed-taille', 170, 0);
+    p.description.poids = getIntValue('ed-poids', 70, 0);
+    p.description.cheveux = getInputValue('ed-cheveux', '').trim();
+    p.description.yeux = getInputValue('ed-yeux', '').trim();
+    p.description.peau = getInputValue('ed-peau', '').trim();
+    p.background = getInputValue('ed-bg', '').trim();
+    p.xp_actuel = getIntValue('ed-xp', 0, 0);
+    if (await saveToSupabase(p)) { setSection('description'); }
+  } catch (error) {
+    handleUiError('saveDesc', error, 'Erreur de validation du formulaire description.');
+  }
 }
 
 // ===== INIT =====
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) { onLogin(session.user); }
-});
+if (ensureSupabaseReady(false)) {
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) { onLogin(session.user); }
+  });
+} else {
+  setAuthMsg('Configuration Supabase manquante.', false);
+}
 </script>
 </body>
 </html>
