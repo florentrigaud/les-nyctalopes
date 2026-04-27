@@ -337,6 +337,24 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .modal-body textarea { resize:vertical; min-height:90px; font-family:var(--ffs); }
 .modal-actions { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.6rem; }
 
+/* ===== ADMIN TOOLBAR + TABLE ===== */
+.admin-toolbar { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+.admin-search { flex:1 1 220px; min-width:200px; background:var(--bg3); border:1px solid var(--border2); color:var(--text); padding:0.5rem 0.75rem; font-family:var(--ffs); font-size:0.9rem; outline:none; transition:border-color 0.2s; }
+.admin-search:focus { border-color:var(--gold); }
+.admin-select { background:var(--bg3); border:1px solid var(--border2); color:var(--text); padding:0.45rem 0.6rem; font-family:var(--ffm); font-size:0.78rem; outline:none; cursor:pointer; transition:border-color 0.2s; }
+.admin-select:focus { border-color:var(--gold); }
+.admin-select-inline { padding:0.3rem 0.5rem; font-size:0.74rem; }
+.admin-count { font-family:var(--ffm); font-size:0.7rem; color:var(--textdim); letter-spacing:0.1em; margin-left:auto; }
+.admin-table.sortable th { position:relative; }
+.admin-table.sortable th:hover { color:var(--text); }
+
+/* ===== GROUPES MANAGER ===== */
+.groupes-list { display:flex; flex-direction:column; gap:0.4rem; max-height:320px; overflow-y:auto; }
+.groupes-row { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.6rem; border:1px solid var(--border); background:var(--bg3); }
+.groupes-name { flex:1; font-family:var(--ff); color:var(--textgold); font-size:0.9rem; }
+.groupes-create { display:flex; gap:0.4rem; align-items:center; margin-top:0.6rem; padding-top:0.7rem; border-top:1px solid var(--border); }
+.groupes-create input { flex:1; }
+
 /* ===== DICE ROLLER ===== */
 .topbar-dice-btn { position:relative; font-family:var(--ffm); font-size:0.7rem; padding:0.35rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; letter-spacing:0.1em; }
 .topbar-dice-btn:hover { background:var(--golddim); }

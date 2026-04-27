@@ -6,6 +6,7 @@ Fichiers SQL à exécuter manuellement dans **Supabase Dashboard → SQL Editor*
 |---|---|---|
 | `0000` | [0000_baseline_rls.sql](0000_baseline_rls.sql) | Helper `is_admin()` + activation RLS + policies de base sur `races`, `classes`, `personnages`, `users`. |
 | `0001` | [0001_admin_gm.sql](0001_admin_gm.sql) | Sprint 3 : extension `users.status`, tables `groupes` / `gm_sessions` / `jets_des`, policies, Realtime. Voir [docs/sprints/sprint-3-admin-gm.md](../../docs/sprints/sprint-3-admin-gm.md). |
+| `0002` | [0002_admin_personnages_access.sql](0002_admin_personnages_access.sql) | Sprint 3 (T4/T5/T7) : policies admin select/update sur `personnages`. |
 
 ## Workflow
 
