@@ -306,6 +306,37 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .admin-tab-placeholder-list code { font-family:var(--ffm); font-size:0.78rem; color:var(--gold2); background:var(--bg3); padding:0.05rem 0.35rem; border:1px solid var(--border); }
 .admin-tab-todo { font-family:var(--ffm); letter-spacing:0.05em; }
 
+.admin-filter-bar { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem; }
+.admin-filter-chip { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--ffm); font-size:0.65rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.4rem 0.85rem; background:transparent; color:var(--textdim); border:1px solid var(--border); cursor:pointer; transition:all 0.2s; }
+.admin-filter-chip:hover { color:var(--text); border-color:var(--border2); }
+.admin-filter-chip.active { color:var(--gold); border-color:var(--gold); background:var(--golddim); }
+.admin-filter-count { font-size:0.62rem; padding:0.05rem 0.4rem; border:1px solid currentColor; opacity:0.75; }
+
+.status-badge { display:inline-block; font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.18rem 0.55rem; border:1px solid; }
+.status-pending   { color:var(--amber); border-color:var(--amber); background:var(--amberbg); }
+.status-validated { color:var(--green2); border-color:var(--green); background:var(--greenbg); }
+.status-refused   { color:var(--red2); border-color:var(--red); background:var(--redbg); }
+
+.badge-admin { display:inline-block; margin-left:0.5rem; font-family:var(--ffm); font-size:0.55rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold2); border:1px solid var(--gold); padding:0.05rem 0.4rem; background:var(--golddim); }
+
+.admin-row-actions { display:flex; gap:0.4rem; flex-wrap:wrap; }
+.btn-refuse { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.8rem; background:transparent; color:var(--red2); border:1px solid var(--red); cursor:pointer; transition:all 0.2s; }
+.btn-refuse:hover:not(:disabled) { background:var(--redbg); }
+.btn-refuse:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-edit { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.8rem; background:transparent; color:var(--blue2); border:1px solid var(--blue); cursor:pointer; transition:all 0.2s; }
+.btn-edit:hover:not(:disabled) { background:var(--bluebg); }
+.btn-edit:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-cancel { font-family:var(--ffm); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.8rem; background:transparent; color:var(--textdim); border:1px solid var(--border2); cursor:pointer; transition:all 0.2s; }
+.btn-cancel:hover { color:var(--text); border-color:var(--text); }
+
+/* ===== ADMIN MODAL ===== */
+.modal-overlay { position:fixed; inset:0; background:rgba(6,7,15,0.78); backdrop-filter:blur(4px); z-index:600; display:flex; align-items:center; justify-content:center; padding:1.5rem; animation:fadeIn 0.18s ease; }
+.modal-panel { background:var(--panel); border:1px solid var(--gold); border-top:3px solid var(--gold); width:100%; max-width:480px; box-shadow:var(--shadow); display:flex; flex-direction:column; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); background:var(--panel2); font-family:var(--ffd); color:var(--textgold); font-size:0.95rem; letter-spacing:0.06em; }
+.modal-body { padding:1.1rem 1.1rem 1.3rem; display:flex; flex-direction:column; gap:0.6rem; }
+.modal-body textarea { resize:vertical; min-height:90px; font-family:var(--ffs); }
+.modal-actions { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.6rem; }
+
 /* ===== DICE ROLLER ===== */
 .topbar-dice-btn { position:relative; font-family:var(--ffm); font-size:0.7rem; padding:0.35rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; letter-spacing:0.1em; }
 .topbar-dice-btn:hover { background:var(--golddim); }
