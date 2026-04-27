@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import StatusEffectsBar from '@/components/StatusEffectsBar';
 import { pvColor } from '@/lib/pathfinder';
 import type { PersoData } from '@/lib/types';
 import type { FullPerso, JoueurInfo, Lookup } from './types';
@@ -184,6 +185,11 @@ export default function PartyCard({
         <button className="btn-edit" onClick={() => setShowDon(true)} disabled={busy}>
           + Donner un don
         </button>
+      </div>
+
+      <div className="party-card-section">
+        <div className="party-card-section-title">États en cours</div>
+        <StatusEffectsBar persoId={perso.id} mode="edit" />
       </div>
 
       <div className="party-card-section">

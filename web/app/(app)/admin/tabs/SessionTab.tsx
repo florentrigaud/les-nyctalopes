@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { PersoData } from '@/lib/types';
 import AddCharacterPicker from './session/AddCharacterPicker';
+import EventsPanel from './session/EventsPanel';
 import PartyCard from './session/PartyCard';
 import {
   parseDataJson,
@@ -355,6 +356,14 @@ export default function SessionTab({ currentAdminId }: { currentAdminId: string 
           onClose={() => setShowPicker(false)}
         />
       )}
+
+      <EventsPanel
+        sessionId={session.id}
+        partyPersos={session.character_ids
+          .map((id) => persos.get(id))
+          .filter((p): p is NonNullable<typeof p> => Boolean(p))}
+        joueurs={joueurs}
+      />
     </section>
   );
 }

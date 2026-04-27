@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useDice } from '@/components/DiceRoller';
+import StatusEffectsBar from '@/components/StatusEffectsBar';
 import { hydratePersonnage } from '@/lib/pathfinder';
 import { usePersonnageRealtime } from '@/lib/usePersonnageRealtime';
 import type { Classe, Personnage, Race } from '@/lib/types';
@@ -164,6 +165,10 @@ export default function FicheView({
       <div className="anim">
         {section === 'combat' && (
           <>
+            <div className="panel-block">
+              <div className="panel-title">États en cours</div>
+              <StatusEffectsBar persoId={perso._db_id} mode="view" />
+            </div>
             <PvSlider perso={perso} onSave={(p) => save(p, { silent: true })} />
             <Combat perso={perso} race={race} classe={classe} onSave={save} />
           </>

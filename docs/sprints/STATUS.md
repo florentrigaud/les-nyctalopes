@@ -31,3 +31,28 @@ Index des sprints avec état d'avancement de chaque ticket. Mettre à jour à ch
 - QCM scénario : table `qcm` (énoncé / options / bonne réponse / push à un sous-ensemble de la party).
 - Votes live : table `votes` + popup côté joueur via Realtime.
 - Effets d'état temporaires (paralysé, étourdi…) avec timer.
+
+---
+
+## Sprint 4 — Événements live (QCM, votes, effets d'état)
+**Branche** : `feat/admin-gm-live-events`
+**Plan** : [sprint-4-live-events.md](sprint-4-live-events.md)
+
+| Ticket | Statut | Commit |
+|---|---|---|
+| S4-T1 — Migration `0003_live_events.sql` | ✅ | `7e972a7` |
+| S4-T2 — Hook `useLiveEvents` côté joueur | ✅ | `fd87262` |
+| S4-T3 — Sub-panel Événements dans SessionTab | ✅ | `fd87262` |
+| S4-T4 — Composer QCM/vote | ✅ | `fd87262` |
+| S4-T5 — Vue temps réel des réponses (counts + pending) | ✅ | `fd87262` |
+| S4-T6 — Clôturer + révéler (QCM/vote) | ✅ | `fd87262` |
+| S4-T7 — Popup `LiveEventPopup` côté joueur | ✅ | `fd87262` |
+| S4-T8 — Intégration popup dans le layout `(app)` | ✅ | `fd87262` |
+| S4-T9 — Appliquer un effet d'état (GM via `StatusEffectsBar`) | ✅ | _ce commit_ |
+| S4-T10 — Affichage des états côté joueur (FicheView) | ✅ | _ce commit_ |
+| S4-T11 — Auto-clear des effets expirés (interval 15 s) | ✅ | _ce commit_ |
+| S4-T12 — QA build + doc | ✅ | _ce commit_ |
+
+### Migration à exécuter sur Supabase avant la prod (sprint 4)
+- [supabase/migrations/0003_live_events.sql](../../supabase/migrations/0003_live_events.sql)
+- Vérifier que `live_events`, `live_event_responses`, `status_effects` apparaissent dans **Database → Replication → `supabase_realtime`** (le bloc `do $$` les ajoute en best-effort).
