@@ -474,6 +474,19 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .live-event-fab { position:fixed; right:1.2rem; bottom:1.2rem; z-index:550; padding:0.55rem 1rem; font-family:var(--ffm); font-size:0.78rem; letter-spacing:0.1em; background:var(--gold); color:#06070f; border:none; cursor:pointer; box-shadow:var(--shadow); animation:fadeIn 0.25s ease; }
 .live-event-fab:hover { background:var(--gold2); }
 
+/* ===== STATUS EFFECTS (Sprint 4) ===== */
+.status-effects-bar { display:flex; flex-direction:column; gap:0.4rem; }
+.status-effects-list { display:flex; flex-wrap:wrap; gap:0.35rem; align-items:center; }
+.status-effect-chip { display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.55rem; background:var(--purplebg); border:1px solid var(--purple); color:var(--purple2); font-family:var(--ffm); font-size:0.72rem; letter-spacing:0.04em; }
+.status-effect-name { font-weight:500; }
+.status-effect-time { font-size:0.65rem; color:var(--textdim); padding-left:0.3rem; border-left:1px solid var(--border2); }
+.status-effect-time.perm { color:var(--gold2); }
+.status-effect-clear { background:transparent; border:none; color:var(--textdim); cursor:pointer; font-size:0.95rem; line-height:1; padding:0; transition:color 0.2s; }
+.status-effect-clear:hover { color:var(--red2); }
+.status-effect-add { font-family:var(--ffm); font-size:0.7rem; padding:0.25rem 0.55rem; background:transparent; color:var(--purple2); border:1px dashed var(--purple); cursor:pointer; transition:all 0.2s; }
+.status-effect-add:hover { background:var(--purplebg); }
+.status-presets { display:flex; flex-wrap:wrap; gap:0.3rem; }
+
 /* ===== ADMIN JETS FEED ===== */
 .jets-feed { display:flex; flex-direction:column; gap:0.3rem; max-height:62vh; overflow-y:auto; padding-right:0.3rem; }
 .jets-row { display:grid; grid-template-columns:80px 1.4fr 1.2fr 2fr 60px; gap:0.6rem; align-items:center; padding:0.55rem 0.7rem; background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--gold); font-size:0.82rem; }

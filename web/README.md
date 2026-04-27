@@ -85,7 +85,9 @@ web/
 | Session GM live — sélection de party + actions XP/PV/items/dons | ✅ Sprint 3 |
 | Sync Realtime des modifs GM → fiche joueur | ✅ Sprint 3 |
 | Feed live des jets de dés (filtres joueur/perso/groupe/fenêtre) | ✅ Sprint 3 |
-| QCM scénario / votes live (popup) | ❌ Sprint 4 |
+| QCM scénario push aux joueurs (popup live, agrégation, reveal MJ) | ✅ Sprint 4 |
+| Votes live (popup, agrégation temps réel, reveal MJ) | ✅ Sprint 4 |
+| Effets d'état temporaires sur les persos (timer + auto-clear) | ✅ Sprint 4 |
 | Vue Wiki | ❌ (lien Pathfinder-FR externe suffit) |
 
 ## Base de données
