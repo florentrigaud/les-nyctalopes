@@ -403,6 +403,28 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .picker-row-meta { font-family:var(--ffm); font-size:0.65rem; color:var(--textdim); letter-spacing:0.08em; }
 .picker-row-groupe { color:var(--blue2); }
 
+/* ===== ADMIN JETS FEED ===== */
+.jets-feed { display:flex; flex-direction:column; gap:0.3rem; max-height:62vh; overflow-y:auto; padding-right:0.3rem; }
+.jets-row { display:grid; grid-template-columns:80px 1.4fr 1.2fr 2fr 60px; gap:0.6rem; align-items:center; padding:0.55rem 0.7rem; background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--gold); font-size:0.82rem; }
+.jets-row:hover { background:var(--panel); }
+.jets-time { font-family:var(--ffm); font-size:0.7rem; color:var(--textdim); letter-spacing:0.06em; }
+.jets-who { font-family:var(--ffm); font-size:0.78rem; }
+.jets-joueur { color:var(--blue2); }
+.jets-perso { color:var(--textgold); }
+.jets-groupe { color:var(--textdim); font-size:0.7rem; }
+.jets-context { color:var(--text); font-style:italic; font-size:0.8rem; }
+.jets-formule { display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+.jets-formule code { font-family:var(--ffm); font-size:0.78rem; color:var(--gold2); background:var(--bg2); padding:0.05rem 0.4rem; border:1px solid var(--border); }
+.jets-rolls { font-family:var(--ffm); font-size:0.7rem; color:var(--textdim); }
+.jets-total { font-family:var(--ffd); font-size:1.1rem; color:var(--textgold); text-align:right; font-weight:700; }
+.jets-total.crit   { color:var(--green2); text-shadow:0 0 8px var(--green); }
+.jets-total.fumble { color:var(--red2); text-shadow:0 0 8px var(--red); }
+
+@media (max-width:780px) {
+  .jets-row { grid-template-columns:auto 1fr 60px; row-gap:0.2rem; }
+  .jets-row .jets-context, .jets-row .jets-formule { grid-column:1 / -1; }
+}
+
 /* ===== DICE ROLLER ===== */
 .topbar-dice-btn { position:relative; font-family:var(--ffm); font-size:0.7rem; padding:0.35rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; letter-spacing:0.1em; }
 .topbar-dice-btn:hover { background:var(--golddim); }
