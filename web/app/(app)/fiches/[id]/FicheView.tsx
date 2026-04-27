@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useDice } from '@/components/DiceRoller';
 import { hydratePersonnage } from '@/lib/pathfinder';
 import { usePersonnageRealtime } from '@/lib/usePersonnageRealtime';
 import type { Classe, Personnage, Race } from '@/lib/types';
@@ -37,6 +38,7 @@ export default function FicheView({
 }) {
   const supabase = createClient();
   const router = useRouter();
+  const { setActivePerso } = useDice();
   const [perso, setPerso] = useState<Personnage>(initial);
   const [section, setSection] = useState<Section>('combat');
   const [toast, setToast] = useState<string | null>(null);
@@ -47,6 +49,12 @@ export default function FicheView({
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   }, []);
+
+  // T9 — rattache les jets de dés effectués sur cette fiche à perso_id.
+  useEffect(() => {
+    setActivePerso(initial._db_id);
+    return () => setActivePerso(null);
+  }, [initial._db_id, setActivePerso]);
 
   // T8 — Realtime : reçoit les modifications GM en direct.
   usePersonnageRealtime(initial._db_id, (row) => {

@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { COMMON_SIDES, type DieSides, type RollResult, type RollSpec, formatSpec, performRoll } from '@/lib/dice';
 
 type DiceCtx = {
@@ -10,6 +11,8 @@ type DiceCtx = {
   clear: () => void;
   toggle: () => void;
   setOpen: (v: boolean) => void;
+  /** Définit le perso actif pour rattacher les jets à venir (nullable hors fiche). */
+  setActivePerso: (persoId: string | null) => void;
 };
 
 const DiceContext = createContext<DiceCtx | null>(null);
@@ -27,6 +30,7 @@ export function DiceProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<RollResult[]>([]);
   const [open, setOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const activePersoRef = useRef<string | null>(null);
 
   useEffect(() => {
     try {
@@ -41,18 +45,47 @@ export function DiceProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch {}
   }, [history, hydrated]);
 
+  const persistRoll = useCallback(async (result: RollResult, persoId: string | null) => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('jets_des').insert({
+        user_id: user.id,
+        perso_id: persoId,
+        contexte: result.spec.label || null,
+        formule: formatSpec(result.spec),
+        resultat: result.total,
+        detail: {
+          count: result.spec.count,
+          sides: result.spec.sides,
+          modifier: result.spec.modifier,
+          rolls: result.rolls,
+        },
+      });
+    } catch (e) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[DiceRoller] persistRoll failed', e);
+      }
+    }
+  }, []);
+
   const roll = useCallback((spec: RollSpec) => {
     const result = performRoll(spec);
     setHistory((h) => [result, ...h].slice(0, MAX_HISTORY));
     setOpen(true);
+    void persistRoll(result, activePersoRef.current);
     return result;
-  }, []);
+  }, [persistRoll]);
 
   const clear = useCallback(() => setHistory([]), []);
   const toggle = useCallback(() => setOpen((v) => !v), []);
+  const setActivePerso = useCallback((id: string | null) => {
+    activePersoRef.current = id;
+  }, []);
 
   return (
-    <DiceContext.Provider value={{ history, open, roll, clear, toggle, setOpen }}>
+    <DiceContext.Provider value={{ history, open, roll, clear, toggle, setOpen, setActivePerso }}>
       {children}
       <DicePanel />
     </DiceContext.Provider>
