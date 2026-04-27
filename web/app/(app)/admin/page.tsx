@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import AdminList from './AdminList';
+import AdminTabs from './AdminTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,11 +11,12 @@ export default async function AdminPage() {
 
   const { data: me } = await supabase
     .from('users')
-    .select('is_admin, is_validated')
+    .select('is_admin, status, is_validated')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (!me?.is_admin || me.is_validated === false) {
+  const isValidated = me?.status ? me.status === 'validated' : me?.is_validated !== false;
+  if (!me?.is_admin || !isValidated) {
     return (
       <div className="empty-state">
         <div className="empty-glyph">⛔</div>
@@ -25,20 +26,19 @@ export default async function AdminPage() {
     );
   }
 
-  const { data: pending } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('is_validated', false);
-
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--ffd)', fontSize: '1.6rem', color: 'var(--textgold)', marginBottom: '1.2rem' }}>
+      <h1
+        style={{
+          fontFamily: 'var(--ffd)',
+          fontSize: '1.6rem',
+          color: 'var(--textgold)',
+          marginBottom: '1.2rem',
+        }}
+      >
         Administration
       </h1>
-      <div className="panel-block">
-        <div className="panel-title">Utilisateurs en attente de validation</div>
-        <AdminList initial={pending || []} currentAdminId={user.id} />
-      </div>
+      <AdminTabs currentAdminId={user.id} />
     </div>
   );
 }

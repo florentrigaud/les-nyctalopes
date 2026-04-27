@@ -292,6 +292,20 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .btn-validate:hover { background:var(--green2); }
 .btn-validate:disabled { opacity:0.5; cursor:not-allowed; }
 
+/* ===== ADMIN TABS ===== */
+.admin-tabs-shell { display:flex; flex-direction:column; gap:1.2rem; }
+.admin-tab-bar { display:flex; gap:0.25rem; border-bottom:1px solid var(--border); padding-bottom:0; flex-wrap:wrap; }
+.admin-tab { font-family:var(--ffm); font-size:0.62rem; letter-spacing:0.16em; text-transform:uppercase; padding:0.55rem 1.1rem; background:transparent; color:var(--textdim); border:1px solid transparent; border-bottom:none; cursor:pointer; transition:all 0.2s; margin-bottom:-1px; }
+.admin-tab:hover { color:var(--text); border-color:var(--border); background:var(--panel); }
+.admin-tab.active { color:var(--gold); border-color:var(--border); border-bottom:1px solid var(--bg); background:var(--panel); }
+.admin-tab-panel { animation:fadeIn 0.25s ease; }
+.admin-tab-placeholder { display:flex; flex-direction:column; align-items:flex-start; gap:0.7rem; padding:1.1rem 0; }
+.admin-tab-placeholder-glyph { font-size:1.6rem; }
+.admin-tab-placeholder-title { font-family:var(--ffd); color:var(--textgold); font-size:1rem; letter-spacing:0.06em; }
+.admin-tab-placeholder-list { list-style:disc; margin-left:1.3rem; color:var(--textdim); font-size:0.85rem; line-height:1.7; }
+.admin-tab-placeholder-list code { font-family:var(--ffm); font-size:0.78rem; color:var(--gold2); background:var(--bg3); padding:0.05rem 0.35rem; border:1px solid var(--border); }
+.admin-tab-todo { font-family:var(--ffm); letter-spacing:0.05em; }
+
 /* ===== DICE ROLLER ===== */
 .topbar-dice-btn { position:relative; font-family:var(--ffm); font-size:0.7rem; padding:0.35rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; letter-spacing:0.1em; }
 .topbar-dice-btn:hover { background:var(--golddim); }
