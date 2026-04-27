@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { hydratePersonnage } from '@/lib/pathfinder';
+import { usePersonnageRealtime } from '@/lib/usePersonnageRealtime';
 import type { Classe, Personnage, Race } from '@/lib/types';
 import Carac from './sections/Carac';
 import NiveauXp from './sections/NiveauXp';
@@ -39,11 +41,29 @@ export default function FicheView({
   const [section, setSection] = useState<Section>('combat');
   const [toast, setToast] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const lastLocalSaveRef = useRef<number>(0);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   }, []);
+
+  // T8 — Realtime : reçoit les modifications GM en direct.
+  usePersonnageRealtime(initial._db_id, (row) => {
+    const next = hydratePersonnage({
+      id: row.id,
+      user_id: row.user_id,
+      nom: row.nom,
+      race_id: row.race_id ?? '',
+      classe_id: row.classe_id ?? '',
+      data_json: row.data_json,
+    });
+    setPerso(next);
+    // Si le payload arrive juste après notre propre save, on ne notifie pas.
+    if (Date.now() - lastLocalSaveRef.current > 1500) {
+      showToast('🛡 MJ : votre fiche a été mise à jour');
+    }
+  });
 
   const handleDelete = useCallback(async () => {
     if (!confirm(`Supprimer définitivement "${perso.nom}" ?`)) return;
@@ -91,6 +111,7 @@ export default function FicheView({
         patch.niveau = next.niveau;
         patch.edition = next.edition;
       }
+      lastLocalSaveRef.current = Date.now();
       const { error } = await supabase.from('personnages').update(patch).eq('id', _db_id);
       if (error) {
         showToast('Erreur sauvegarde : ' + error.message);
