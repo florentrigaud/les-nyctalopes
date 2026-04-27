@@ -158,6 +158,57 @@ export default function InscriptionsTab({ currentAdminId }: { currentAdminId: st
     return true;
   }
 
+  async function togglePromote(target: UserRow) {
+    setErr(null);
+    if (target.id === currentAdminId) {
+      setErr('Vous ne pouvez pas modifier votre propre rôle admin.');
+      return;
+    }
+    const becomeAdmin = !target.is_admin;
+    const action = becomeAdmin ? 'promouvoir' : 'rétrograder';
+    const message = becomeAdmin
+      ? `Promouvoir ${target.email} en administrateur ?\n\nL’utilisateur aura accès à /admin et pourra valider/refuser des comptes, gérer les sessions GM, voir tous les personnages.`
+      : `Retirer les droits admin à ${target.email} ?`;
+    if (!confirm(message)) return;
+    if (!(await checkAdminSession())) return;
+
+    setBusyId(target.id);
+    const patch: Record<string, unknown> = { is_admin: becomeAdmin };
+    // Promouvoir un compte non-validé valide aussi le compte (sinon il ne
+    // pourra pas accéder à /admin à cause de la double-gate).
+    if (becomeAdmin && target.status !== 'validated') {
+      patch.status = 'validated';
+      patch.refused_reason = null;
+    }
+    let { error } = await supabase.from('users').update(patch).eq('id', target.id);
+
+    if (error && /column .*status.* does not exist/i.test(error.message)) {
+      // Legacy schema fallback
+      const legacyPatch: Record<string, unknown> = { is_admin: becomeAdmin };
+      if (becomeAdmin) legacyPatch.is_validated = true;
+      const fb = await supabase.from('users').update(legacyPatch).eq('id', target.id);
+      error = fb.error;
+    }
+
+    setBusyId(null);
+    if (error) {
+      setErr(`Échec ${action} : ${error.message}`);
+      return;
+    }
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === target.id
+          ? {
+              ...u,
+              is_admin: becomeAdmin,
+              status: becomeAdmin && u.status !== 'validated' ? 'validated' : u.status,
+              refused_reason: becomeAdmin && u.status === 'refused' ? null : u.refused_reason,
+            }
+          : u
+      )
+    );
+  }
+
   async function savePseudo(target: UserRow, pseudo: string) {
     setErr(null);
     if (legacyMode) {
@@ -280,6 +331,20 @@ export default function InscriptionsTab({ currentAdminId }: { currentAdminId: st
                         onClick={() => openEdit(u)}
                       >
                         Pseudo
+                      </button>
+                      <button
+                        className={u.is_admin ? 'btn-refuse' : 'btn-promote'}
+                        disabled={busyId === u.id || isSelf}
+                        title={
+                          isSelf
+                            ? 'Auto-modification du rôle admin interdite'
+                            : u.is_admin
+                              ? 'Retirer les droits admin'
+                              : 'Promouvoir en administrateur'
+                        }
+                        onClick={() => togglePromote(u)}
+                      >
+                        {u.is_admin ? '− Admin' : '+ Admin'}
                       </button>
                     </div>
                   </td>
