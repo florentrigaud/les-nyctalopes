@@ -61,28 +61,13 @@ create index if not exists status_effects_perso_active_idx
   on public.status_effects(perso_id) where cleared_at is null;
 
 -- ---------------------------------------------------------------------------
--- 4. Helper : un perso est-il visible cible d'un event ?
---    target_perso_ids vide = broadcast à toute la party. Sinon = sous-set.
+-- 4. (Helper retiré — la logique de visibilité est inlinée dans la policy
+--     live_events_select_target ci-dessous, parce que Postgres n'accepte pas
+--     `public.live_events` comme argument row composite à l'intérieur d'une
+--     RLS policy on the same table — ça déclenche 42P01 missing FROM clause.)
 -- ---------------------------------------------------------------------------
 
-create or replace function public.is_event_target(event_row public.live_events, perso public.personnages)
-returns boolean
-language sql
-stable
-as $$
-  select
-    -- Le perso doit être dans la session de l'event
-    exists (
-      select 1 from public.gm_sessions s
-      where s.id = event_row.gm_session_id
-        and perso.id = any(s.character_ids)
-    )
-    -- Et soit broadcast, soit explicitement ciblé
-    and (
-      cardinality(event_row.target_perso_ids) = 0
-      or perso.id = any(event_row.target_perso_ids)
-    );
-$$;
+drop function if exists public.is_event_target(public.live_events, public.personnages);
 
 -- ---------------------------------------------------------------------------
 -- 5. RLS — activation
@@ -104,14 +89,22 @@ create policy live_events_admin_all on public.live_events
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
 
--- Un user voit un event si l'un de ses persos est cible.
+-- Un user voit un event si l'un de ses persos est dans la session de l'event
+-- ET (broadcast OU explicitement ciblé). Logique inlinée — voir bloc 4 plus
+-- haut pour la raison.
 create policy live_events_select_target on public.live_events
   for select to authenticated
   using (
     exists (
-      select 1 from public.personnages p
-      where p.user_id = auth.uid()
-        and public.is_event_target(public.live_events, p)
+      select 1
+      from public.gm_sessions s
+      join public.personnages p on p.id = any(s.character_ids)
+      where s.id = live_events.gm_session_id
+        and p.user_id = auth.uid()
+        and (
+          cardinality(live_events.target_perso_ids) = 0
+          or p.id = any(live_events.target_perso_ids)
+        )
     )
   );
 
