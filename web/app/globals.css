@@ -355,6 +355,54 @@ body::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:non
 .groupes-create { display:flex; gap:0.4rem; align-items:center; margin-top:0.6rem; padding-top:0.7rem; border-top:1px solid var(--border); }
 .groupes-create input { flex:1; }
 
+/* ===== ADMIN SESSION TAB ===== */
+.modal-panel-wide { max-width:720px; }
+
+.empty-session { display:flex; flex-direction:column; align-items:center; gap:0.6rem; text-align:center; padding:2rem 1rem; }
+.empty-session-glyph { font-size:2.4rem; opacity:0.7; }
+.empty-session-title { font-family:var(--ffd); font-size:1.1rem; color:var(--textgold); letter-spacing:0.06em; }
+.empty-session-sub { color:var(--textdim); font-size:0.88rem; max-width:480px; line-height:1.6; }
+
+.session-header { display:flex; justify-content:space-between; align-items:flex-start; gap:0.8rem; flex-wrap:wrap; padding-bottom:0.8rem; border-bottom:1px solid var(--border); margin-bottom:1rem; }
+.session-name { font-family:var(--ffd); font-size:1.15rem; color:var(--textgold); letter-spacing:0.05em; }
+.session-meta { font-family:var(--ffm); font-size:0.7rem; color:var(--textdim); letter-spacing:0.1em; margin-top:0.25rem; }
+.session-header-actions { display:flex; gap:0.4rem; flex-wrap:wrap; }
+
+.party-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:0.9rem; }
+.party-card { background:var(--bg2); border:1px solid var(--border); border-top:2px solid var(--gold); padding:0.9rem 1rem 1rem; display:flex; flex-direction:column; gap:0.7rem; }
+.party-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+.party-card-name { font-family:var(--ffd); color:var(--textgold); font-size:1rem; letter-spacing:0.04em; }
+.party-card-meta { font-family:var(--ffm); font-size:0.65rem; color:var(--textdim); letter-spacing:0.08em; margin-top:0.15rem; }
+.party-card-joueur { color:var(--blue2); }
+.party-card-section { display:flex; flex-direction:column; gap:0.35rem; }
+.party-card-section-title { font-family:var(--ffm); font-size:0.6rem; color:var(--textdim); letter-spacing:0.16em; text-transform:uppercase; }
+.party-card-row { display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+.party-card-stat { font-family:var(--ffm); font-size:0.85rem; color:var(--textgold); min-width:90px; }
+.party-card-input { width:100px; flex:none; }
+.party-card-list { list-style:none; padding-left:0; margin:0; display:flex; flex-direction:column; gap:0.15rem; font-size:0.82rem; color:var(--text); }
+.party-card-list li { padding:0.15rem 0.2rem; border-left:2px solid var(--border); padding-left:0.5rem; }
+.party-card-actions { display:flex; gap:0.3rem; flex-wrap:wrap; }
+
+.pv-bar-wrap { position:relative; height:22px; }
+.pv-bar-track { position:absolute; inset:0; background:var(--bg3); border:1px solid var(--border); }
+.pv-bar-fill { position:absolute; left:0; top:0; bottom:0; transition:width 0.25s ease; }
+.pv-bar-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--ffm); font-size:0.78rem; color:var(--text); text-shadow:0 1px 2px rgba(0,0,0,0.7); gap:0.15rem; }
+.pv-slider { width:100%; cursor:pointer; }
+.btn-pv-minus, .btn-pv-plus { font-family:var(--ffm); font-size:0.65rem; letter-spacing:0.1em; padding:0.3rem 0.55rem; border:1px solid; cursor:pointer; background:transparent; transition:all 0.2s; }
+.btn-pv-minus { color:var(--red2); border-color:var(--red); }
+.btn-pv-minus:hover:not(:disabled) { background:var(--redbg); }
+.btn-pv-plus { color:var(--green2); border-color:var(--green); }
+.btn-pv-plus:hover:not(:disabled) { background:var(--greenbg); }
+.btn-pv-minus:disabled, .btn-pv-plus:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* ===== ADMIN ADD-CHAR PICKER ===== */
+.picker-list { display:flex; flex-direction:column; gap:0.35rem; max-height:55vh; overflow-y:auto; }
+.picker-row { display:flex; align-items:center; gap:0.6rem; padding:0.55rem 0.7rem; border:1px solid var(--border); background:var(--bg3); }
+.picker-row-info { flex:1; display:flex; flex-direction:column; gap:0.1rem; min-width:0; }
+.picker-row-name { font-family:var(--ff); color:var(--textgold); font-size:0.9rem; letter-spacing:0.03em; }
+.picker-row-meta { font-family:var(--ffm); font-size:0.65rem; color:var(--textdim); letter-spacing:0.08em; }
+.picker-row-groupe { color:var(--blue2); }
+
 /* ===== DICE ROLLER ===== */
 .topbar-dice-btn { position:relative; font-family:var(--ffm); font-size:0.7rem; padding:0.35rem 0.7rem; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; transition:all 0.2s; letter-spacing:0.1em; }
 .topbar-dice-btn:hover { background:var(--golddim); }
