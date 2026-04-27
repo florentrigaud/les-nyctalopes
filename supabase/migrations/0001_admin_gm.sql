@@ -201,35 +201,11 @@ create policy jets_des_insert_own on public.jets_des
   with check (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
--- 7. Realtime (à activer manuellement aussi via Dashboard > Database > Replication)
---    Le supabase_realtime publication doit inclure personnages et jets_des.
+-- 7. Realtime — à activer manuellement.
 -- ---------------------------------------------------------------------------
-
-do $$
-begin
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'personnages'
-  ) then
-    begin
-      execute 'alter publication supabase_realtime add table public.personnages';
-    exception when others then
-      raise notice 'Could not add personnages to supabase_realtime: %', sqlerrm;
-    end;
-  end if;
-
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'jets_des'
-  ) then
-    begin
-      execute 'alter publication supabase_realtime add table public.jets_des';
-    exception when others then
-      raise notice 'Could not add jets_des to supabase_realtime: %', sqlerrm;
-    end;
-  end if;
-end$$;
+-- Va dans Supabase Dashboard → Database → Replication →
+--   publication "supabase_realtime" → coche :
+--     - public.personnages
+--     - public.jets_des
+-- (Le bloc DO automatique a été retiré : il déclenchait des "syntax error
+-- at end of input" dans certaines versions du SQL Editor Supabase.)

@@ -16,9 +16,18 @@ Fichiers SQL à exécuter manuellement dans **Supabase Dashboard → SQL Editor*
 3. Coller le contenu du `.sql` (sans header de snippet — coller seulement le fichier).
 4. Run. Si tout est vert, passer au suivant.
 
-## Vérifier que Realtime est bien activé (post-`0001`)
+## Activer Realtime manuellement (après `0001` et `0003`)
 
-Dans **Database → Replication → `supabase_realtime` publication**, vérifier que `personnages` et `jets_des` sont cochés. Le bloc `do $$ ... $$` du `0001` tente de les ajouter automatiquement, mais selon les permissions du projet ça peut échouer silencieusement (un `notice` apparaît alors).
+Le SQL Editor de Supabase plante sur les blocs `do $$ ... $$` selon les versions (« syntax error at end of input »), donc l'activation Realtime se fait **à la main** :
+
+1. **Database → Replication → `supabase_realtime` publication**.
+2. Coche les 5 tables suivantes :
+   - `public.personnages` (sprint 3, T8)
+   - `public.jets_des` (sprint 3, T10)
+   - `public.live_events` (sprint 4, T7)
+   - `public.live_event_responses` (sprint 4, T5)
+   - `public.status_effects` (sprint 4, T10)
+3. Save.
 
 ## Promotion admin
 

@@ -166,41 +166,14 @@ create policy status_effects_select_own on public.status_effects
   );
 
 -- ---------------------------------------------------------------------------
--- 9. Realtime — best effort
+-- 9. Realtime — à activer manuellement.
 -- ---------------------------------------------------------------------------
-
-do $$
-begin
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'live_events'
-  ) then
-    begin execute 'alter publication supabase_realtime add table public.live_events';
-    exception when others then raise notice 'live_events realtime: %', sqlerrm;
-    end;
-  end if;
-
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'live_event_responses'
-  ) then
-    begin execute 'alter publication supabase_realtime add table public.live_event_responses';
-    exception when others then raise notice 'live_event_responses realtime: %', sqlerrm;
-    end;
-  end if;
-
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'status_effects'
-  ) then
-    begin execute 'alter publication supabase_realtime add table public.status_effects';
-    exception when others then raise notice 'status_effects realtime: %', sqlerrm;
-    end;
-  end if;
-end$$;
+-- Va dans Supabase Dashboard → Database → Replication →
+--   publication "supabase_realtime" → coche les 3 tables :
+--     - public.live_events
+--     - public.live_event_responses
+--     - public.status_effects
+--
+-- (Le bloc `do $$ ... $$` qui le faisait automatiquement déclenchait un
+-- "syntax error at end of input" dans le SQL Editor selon les versions —
+-- l'activation manuelle prend 5 secondes et est plus fiable.)
