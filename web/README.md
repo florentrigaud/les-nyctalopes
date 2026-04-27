@@ -79,6 +79,13 @@ web/
 | Édition notes libres capacités | ✅ |
 | Édition description + historique + XP | ✅ |
 | Validation admin (double-gate + anti auto-validation) | ✅ |
+| Refus d'inscription avec raison + édition de pseudo | ✅ Sprint 3 |
+| Vue globale des personnages (filtres groupe / joueur) | ✅ Sprint 3 |
+| CRUD groupes d'aventuriers + assignation | ✅ Sprint 3 |
+| Session GM live — sélection de party + actions XP/PV/items/dons | ✅ Sprint 3 |
+| Sync Realtime des modifs GM → fiche joueur | ✅ Sprint 3 |
+| Feed live des jets de dés (filtres joueur/perso/groupe/fenêtre) | ✅ Sprint 3 |
+| QCM scénario / votes live (popup) | ❌ Sprint 4 |
 | Vue Wiki | ❌ (lien Pathfinder-FR externe suffit) |
 
 ## Base de données

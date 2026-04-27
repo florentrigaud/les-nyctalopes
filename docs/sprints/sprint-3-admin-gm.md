@@ -157,4 +157,4 @@ Layout = composant `AdminTabs` client (state local), pages serveur pour le gatin
 
 ## Suivi d'avancement
 
-À chaque ticket terminé, mettre à jour `docs/sprints/STATUS.md` (ligne par ticket : ✅ / 🚧 / ❌ + lien commit).
+Statut détaillé tenu dans [STATUS.md](STATUS.md). Sprint **livré** le 2026-04-27 — les 12 tickets sont passés sur la branche `feat/admin-gm-panel`. Build prod ✅, typecheck ✅. Reste à exécuter les 3 migrations sur Supabase et activer Realtime (cf. STATUS.md).
