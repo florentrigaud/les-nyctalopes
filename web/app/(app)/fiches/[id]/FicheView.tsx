@@ -45,6 +45,8 @@ export default function FicheView({
   const [toast, setToast] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const lastLocalSaveRef = useRef<number>(0);
+  const lastSavedRef = useRef<Personnage>(initial);
+  const lastRealtimeRef = useRef<number>(0);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -67,6 +69,8 @@ export default function FicheView({
       classe_id: row.classe_id ?? '',
       data_json: row.data_json,
     });
+    lastRealtimeRef.current = Date.now();
+    lastSavedRef.current = next;
     setPerso(next);
     // Si le payload arrive juste après notre propre save, on ne notifie pas.
     if (Date.now() - lastLocalSaveRef.current > 1500) {
@@ -127,11 +131,26 @@ export default function FicheView({
         return false;
       }
       setPerso(next);
+      lastSavedRef.current = next;
       if (!opts?.silent) showToast('Sauvegarde effectuée');
       return true;
     },
     [supabase, showToast]
   );
+
+  // Autosave global — debounce 800 ms, silencieux, ignore les modifs venues du Realtime.
+  useEffect(() => {
+    if (perso === lastSavedRef.current) return;
+    if (Date.now() - lastRealtimeRef.current < 1500) {
+      lastSavedRef.current = perso;
+      return;
+    }
+    const t = setTimeout(async () => {
+      const ok = await save(perso, { silent: true, mirrorColumns: true });
+      if (ok) lastSavedRef.current = perso;
+    }, 800);
+    return () => clearTimeout(t);
+  }, [perso, save]);
 
   return (
     <div>

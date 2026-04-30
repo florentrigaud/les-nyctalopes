@@ -56,3 +56,16 @@ Index des sprints avec état d'avancement de chaque ticket. Mettre à jour à ch
 ### Migration à exécuter sur Supabase avant la prod (sprint 4)
 - [supabase/migrations/0003_live_events.sql](../../supabase/migrations/0003_live_events.sql)
 - Vérifier que `live_events`, `live_event_responses`, `status_effects` apparaissent dans **Database → Replication → `supabase_realtime`** (le bloc `do $$` les ajoute en best-effort).
+
+---
+
+## Améliorations post-sprint 4
+
+| Sujet | Statut | Commit |
+|---|---|---|
+| FicheView : autosave global 800 ms (silencieux, `mirrorColumns`, anti-écho Realtime) | ✅ | _ce commit_ |
+
+- Tout changement local de `perso` est désormais persisté après 800 ms d'inactivité, sans toast.
+- `lastSavedRef` (référence du dernier état sauvegardé) coupe les double-saves quand une section enfant a déjà appelé `save` directement.
+- `lastRealtimeRef` empêche le client de re-pousser une modif reçue du MJ (anti-boucle Realtime, fenêtre 1500 ms).
+- `mirrorColumns: true` est systématique sur l'autosave pour garder `niveau`/`edition` cohérents avec `data_json`.
