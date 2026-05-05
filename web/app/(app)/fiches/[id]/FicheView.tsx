@@ -138,6 +138,8 @@ export default function FicheView({
     [supabase, showToast]
   );
 
+  const onChange = useCallback((next: Personnage) => setPerso(next), []);
+
   // Autosave global — debounce 800 ms, silencieux, ignore les modifs venues du Realtime.
   useEffect(() => {
     if (perso === lastSavedRef.current) return;
@@ -164,9 +166,15 @@ export default function FicheView({
         </div>
       </div>
 
-      <NiveauXp perso={perso} race={race} classe={classe} onSave={(p) => save(p, { mirrorColumns: true })} />
+      <NiveauXp
+        perso={perso}
+        race={race}
+        classe={classe}
+        onChange={onChange}
+        onSave={(p) => save(p, { mirrorColumns: true })}
+      />
 
-      <Carac perso={perso} onSave={save} />
+      <Carac perso={perso} onChange={onChange} />
 
       <div className="section-tabs anim">
         {SECTIONS.map((s) => (
@@ -188,14 +196,14 @@ export default function FicheView({
               <div className="panel-title">États en cours</div>
               <StatusEffectsBar persoId={perso._db_id} mode="view" />
             </div>
-            <PvSlider perso={perso} onSave={(p) => save(p, { silent: true })} />
-            <Combat perso={perso} race={race} classe={classe} onSave={save} />
+            <PvSlider perso={perso} onChange={onChange} />
+            <Combat perso={perso} race={race} classe={classe} onChange={onChange} />
           </>
         )}
-        {section === 'competences' && <Comp perso={perso} classe={classe} onSave={save} />}
-        {section === 'equipement' && <Equip perso={perso} onSave={save} />}
-        {section === 'capacites' && <Capas perso={perso} race={race} classe={classe} onSave={save} />}
-        {section === 'description' && <Desc perso={perso} onSave={save} />}
+        {section === 'competences' && <Comp perso={perso} classe={classe} onChange={onChange} />}
+        {section === 'equipement' && <Equip perso={perso} onChange={onChange} />}
+        {section === 'capacites' && <Capas perso={perso} race={race} classe={classe} onChange={onChange} />}
+        {section === 'description' && <Desc perso={perso} onChange={onChange} />}
       </div>
 
       <div className={`toast ${toast ? 'show' : ''}`}>{toast}</div>

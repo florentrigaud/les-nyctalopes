@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -272,6 +273,7 @@ export default function PersonnagesTab() {
               <th>Classe</th>
               <SortHeader label="Niv." field="niveau" sortBy={sortBy} sortDir={sortDir} onClick={toggleSort} />
               <SortHeader label="Groupe" field="groupe" sortBy={sortBy} sortDir={sortDir} onClick={toggleSort} />
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -301,6 +303,9 @@ export default function PersonnagesTab() {
                         </option>
                       ))}
                     </select>
+                  </td>
+                  <td>
+                    <Link href={`/fiches/${p.id}`} className="btn-edit">Consulter</Link>
                   </td>
                 </tr>
               );

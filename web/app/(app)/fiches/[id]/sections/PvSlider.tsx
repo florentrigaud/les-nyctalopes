@@ -1,41 +1,25 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { pvColor } from '@/lib/pathfinder';
 import type { Personnage } from '@/lib/types';
 
 export default function PvSlider({
   perso,
-  onSave,
+  onChange,
 }: {
   perso: Personnage;
-  onSave: (p: Personnage) => Promise<boolean>;
+  onChange: (p: Personnage) => void;
 }) {
   const pvMax = perso.combats?.pv_max || 0;
-  const [value, setValue] = useState(perso.combats?.pv_actuel ?? pvMax);
-  const [autosave, setAutosave] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setValue(perso.combats?.pv_actuel ?? pvMax);
-  }, [perso.combats?.pv_actuel, pvMax]);
-
-  function onChange(v: number) {
-    setValue(v);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
-      const ok = await onSave({
-        ...perso,
-        combats: { ...perso.combats, pv_actuel: v },
-      });
-      if (ok) {
-        setAutosave(true);
-        setTimeout(() => setAutosave(false), 2000);
-      }
-    }, 1500);
-  }
-
+  const value = perso.combats?.pv_actuel ?? pvMax;
   const pct = pvMax ? Math.round((value / pvMax) * 100) : 0;
+
+  function setPv(v: number) {
+    onChange({
+      ...perso,
+      combats: { ...perso.combats, pv_actuel: Math.max(0, Math.min(pvMax, v)) },
+    });
+  }
 
   return (
     <div className="pv-slider-wrap">
@@ -51,14 +35,12 @@ export default function PvSlider({
         min={0}
         max={pvMax}
         value={value}
-        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+        onChange={(e) => setPv(parseInt(e.target.value) || 0)}
       />
       <div className="pv-bar-outer">
         <div className="pv-bar-inner" style={{ width: `${pct}%`, background: pvColor(pct) }} />
       </div>
-      <div className="pv-pct-label">
-        {pct}% <span className={`autosave-dot ${autosave ? 'show' : ''}`} />
-      </div>
+      <div className="pv-pct-label">{pct}%</div>
     </div>
   );
 }

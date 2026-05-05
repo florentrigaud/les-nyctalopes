@@ -13,7 +13,7 @@ export default async function FicheDetail({ params }: { params: Promise<{ id: st
   if (!user) return null;
 
   const [persoRes, racesRes, classesRes] = await Promise.all([
-    supabase.from('personnages').select('*').eq('id', id).eq('user_id', user.id).maybeSingle(),
+    supabase.from('personnages').select('*').eq('id', id).maybeSingle(),
     supabase.from('races').select('*'),
     supabase.from('classes').select('*'),
   ]);

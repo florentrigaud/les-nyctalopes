@@ -1,45 +1,52 @@
 'use client';
 
-import { useState } from 'react';
 import type { Arme, InventaireItem, Personnage, Richesses } from '@/lib/types';
 import { RollBtn, useDice } from '@/components/DiceRoller';
 import { parseDiceSpec } from '@/lib/dice';
 
+const EMPTY_RICH: Richesses = { pp: 0, po: 0, pa: 0, pc: 0 };
+
 export default function Equip({
   perso,
-  onSave,
+  onChange,
 }: {
   perso: Personnage;
-  onSave: (p: Personnage) => Promise<boolean>;
+  onChange: (p: Personnage) => void;
 }) {
   const { roll } = useDice();
-  const [editArmes, setEditArmes] = useState(false);
-  const [editInv, setEditInv] = useState(false);
-  const [editRich, setEditRich] = useState(false);
+  const armes: Arme[] = perso.armes || [];
+  const inv: InventaireItem[] = perso.inventaire || [];
+  const rich: Richesses = perso.richesses || EMPTY_RICH;
 
-  const [armes, setArmes] = useState<Arme[]>(() => [...(perso.armes || [])]);
-  const [inv, setInv] = useState<InventaireItem[]>(() => [...(perso.inventaire || [])]);
-  const [rich, setRich] = useState<Richesses>(() => ({
-    pp: perso.richesses?.pp || 0,
-    po: perso.richesses?.po || 0,
-    pa: perso.richesses?.pa || 0,
-    pc: perso.richesses?.pc || 0,
-  }));
+  function updateArme(i: number, patch: Partial<Arme>) {
+    const next = armes.map((a, idx) => (idx === i ? { ...a, ...patch } : a));
+    onChange({ ...perso, armes: next });
+  }
+  function addArme() {
+    const empty: Arme = { nom: '', type: '', toucher: '+0', degats: '1d6', crit: 'x2' };
+    onChange({ ...perso, armes: [...armes, empty] });
+  }
+  function delArme(i: number) {
+    onChange({ ...perso, armes: armes.filter((_, idx) => idx !== i) });
+  }
 
-  async function submitArmes() {
-    const cleaned = armes.map((a) => ({ ...a, nom: a.nom.trim() })).filter((a) => a.nom);
-    const ok = await onSave({ ...perso, armes: cleaned });
-    if (ok) { setArmes(cleaned); setEditArmes(false); }
+  function updateInv(i: number, patch: Partial<InventaireItem>) {
+    const next = inv.map((it, idx) => (idx === i ? { ...it, ...patch } : it));
+    const charge = next.reduce((s, it) => s + (it.poids || 0), 0);
+    onChange({ ...perso, inventaire: next, charge_actuelle: charge });
   }
-  async function submitInv() {
-    const cleaned = inv.map((i) => ({ ...i, nom: i.nom.trim() })).filter((i) => i.nom);
-    const charge = cleaned.reduce((s, i) => s + (i.poids || 0), 0);
-    const ok = await onSave({ ...perso, inventaire: cleaned, charge_actuelle: charge });
-    if (ok) { setInv(cleaned); setEditInv(false); }
+  function addInv() {
+    const empty: InventaireItem = { nom: '', poids: 0 };
+    onChange({ ...perso, inventaire: [...inv, empty] });
   }
-  async function submitRich() {
-    const ok = await onSave({ ...perso, richesses: rich });
-    if (ok) setEditRich(false);
+  function delInv(i: number) {
+    const next = inv.filter((_, idx) => idx !== i);
+    const charge = next.reduce((s, it) => s + (it.poids || 0), 0);
+    onChange({ ...perso, inventaire: next, charge_actuelle: charge });
+  }
+
+  function setRich(k: keyof Richesses, raw: number) {
+    onChange({ ...perso, richesses: { ...rich, [k]: Math.max(0, raw || 0) } });
   }
 
   return (
@@ -47,61 +54,77 @@ export default function Equip({
       <div className="panel-block">
         <div className="panel-header panel-title-wrap">
           <span className="panel-title" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>Armes</span>
-          <button className="btn-edit" onClick={() => setEditArmes((v) => !v)}>✎ Modifier</button>
         </div>
 
-        {!editArmes ? (
-          (perso.armes || []).length === 0 ? (
-            <div style={{ color: 'var(--textdim)', fontSize: '0.85rem' }}>Aucune arme.</div>
-          ) : (
-            perso.armes.map((a, i) => {
-              const toucherMod = typeof a.toucher === 'number'
-                ? a.toucher
-                : parseInt(String(a.toucher ?? '0').replace(/[^\d-]/g, ''), 10) || 0;
-              const degatsSpec = parseDiceSpec(String(a.degats || '1d4'), `Dégâts — ${a.nom}`);
-              return (
-                <div key={i} className="arme-row">
-                  <div className="arme-nom">⚔ {a.nom} <span style={{ fontFamily: 'var(--ffm)', fontSize: '0.6rem', color: 'var(--textdim)', marginLeft: '0.5rem' }}>{a.type || ''}</span></div>
-                  <div className="arme-stat">
-                    <div className="arme-stat-l">Toucher</div>
-                    <div className="arme-stat-v">
-                      <RollBtn label={`Attaque — ${a.nom}`} modifier={toucherMod}>{a.toucher ?? 0}</RollBtn>
-                    </div>
-                  </div>
-                  <div className="arme-stat">
-                    <div className="arme-stat-l">Dégâts</div>
-                    <div className="arme-stat-v">
-                      {degatsSpec ? (
-                        <button type="button" className="roll-btn" onClick={() => roll(degatsSpec)}>{a.degats || '1d4'}</button>
-                      ) : (
-                        <span>{a.degats || '1d4'}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="arme-stat"><div className="arme-stat-l">Critique</div><div className="arme-stat-v">{a.crit || 'x2'}</div></div>
-                </div>
-              );
-            })
-          )
-        ) : (
-          <>
-            {armes.map((a, i) => (
-              <div key={i} className="edit-row">
-                <input className="edit-input" style={{ flex: 2, minWidth: 110 }} placeholder="Nom" value={a.nom} onChange={(e) => setArmes((arr) => arr.map((x, idx) => (idx === i ? { ...x, nom: e.target.value } : x)))} />
-                <div><label className="edit-label">Type</label><input className="edit-input edit-input-sm" placeholder="Corps-à-corps" value={a.type || ''} onChange={(e) => setArmes((arr) => arr.map((x, idx) => (idx === i ? { ...x, type: e.target.value } : x)))} /></div>
-                <div><label className="edit-label">Toucher</label><input className="edit-input edit-input-xs" value={String(a.toucher ?? '0')} onChange={(e) => setArmes((arr) => arr.map((x, idx) => (idx === i ? { ...x, toucher: e.target.value } : x)))} /></div>
-                <div><label className="edit-label">Dégâts</label><input className="edit-input edit-input-sm" value={a.degats || ''} onChange={(e) => setArmes((arr) => arr.map((x, idx) => (idx === i ? { ...x, degats: e.target.value } : x)))} /></div>
-                <div><label className="edit-label">Crit</label><input className="edit-input edit-input-xs" value={a.crit || ''} onChange={(e) => setArmes((arr) => arr.map((x, idx) => (idx === i ? { ...x, crit: e.target.value } : x)))} /></div>
-                <button className="btn-del" onClick={() => setArmes((arr) => arr.filter((_, idx) => idx !== i))}>x</button>
-              </div>
-            ))}
-            <div className="edit-bar" style={{ marginTop: '0.6rem' }}>
-              <button className="btn-add" onClick={() => setArmes((arr) => [...arr, { nom: '', type: '', toucher: '+0', degats: '1d6', crit: 'x2' }])}>+ Ajouter arme</button>
-              <button className="btn-save" onClick={submitArmes}>Valider</button>
-              <button className="btn-cancel" onClick={() => setEditArmes(false)}>Annuler</button>
-            </div>
-          </>
+        {armes.length === 0 && (
+          <div style={{ color: 'var(--textdim)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Aucune arme.</div>
         )}
+
+        {armes.map((a, i) => {
+          const toucherMod = typeof a.toucher === 'number'
+            ? a.toucher
+            : parseInt(String(a.toucher ?? '0').replace(/[^\d-]/g, ''), 10) || 0;
+          const degatsSpec = parseDiceSpec(String(a.degats || '1d4'), `Dégâts — ${a.nom || 'arme'}`);
+          return (
+            <div key={i} className="edit-row" style={{ alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <input
+                className="edit-input"
+                style={{ flex: 2, minWidth: 110 }}
+                placeholder="Nom"
+                value={a.nom}
+                onChange={(e) => updateArme(i, { nom: e.target.value })}
+              />
+              <div>
+                <label className="edit-label">Type</label>
+                <input
+                  className="edit-input edit-input-sm"
+                  placeholder="Corps-à-corps"
+                  value={a.type || ''}
+                  onChange={(e) => updateArme(i, { type: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="edit-label">Toucher</label>
+                <input
+                  className="edit-input edit-input-xs"
+                  value={String(a.toucher ?? '0')}
+                  onChange={(e) => updateArme(i, { toucher: e.target.value })}
+                />
+                {a.nom && (
+                  <span style={{ marginLeft: '0.3rem' }}>
+                    <RollBtn label={`Attaque — ${a.nom}`} modifier={toucherMod}>{a.toucher ?? 0}</RollBtn>
+                  </span>
+                )}
+              </div>
+              <div>
+                <label className="edit-label">Dégâts</label>
+                <input
+                  className="edit-input edit-input-sm"
+                  value={a.degats || ''}
+                  onChange={(e) => updateArme(i, { degats: e.target.value })}
+                />
+                {a.nom && degatsSpec && (
+                  <button type="button" className="roll-btn" onClick={() => roll(degatsSpec)} style={{ marginLeft: '0.3rem' }}>
+                    🎲
+                  </button>
+                )}
+              </div>
+              <div>
+                <label className="edit-label">Crit</label>
+                <input
+                  className="edit-input edit-input-xs"
+                  value={a.crit || ''}
+                  onChange={(e) => updateArme(i, { crit: e.target.value })}
+                />
+              </div>
+              <button className="btn-del" onClick={() => delArme(i)}>x</button>
+            </div>
+          );
+        })}
+
+        <div className="edit-bar" style={{ marginTop: '0.6rem' }}>
+          <button className="btn-add" onClick={addArme}>+ Ajouter arme</button>
+        </div>
       </div>
 
       <div className="two-col">
@@ -110,67 +133,60 @@ export default function Equip({
             <span className="panel-title" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>
               Inventaire · {perso.charge_actuelle || 0}/{perso.charge_max || 0} kg
             </span>
-            <button className="btn-edit" onClick={() => setEditInv((v) => !v)}>✎ Modifier</button>
           </div>
 
-          {!editInv ? (
-            (perso.inventaire || []).length === 0 ? (
-              <div style={{ color: 'var(--textdim)', fontSize: '0.85rem' }}>Inventaire vide.</div>
-            ) : (
-              perso.inventaire.map((it, i) => (
-                <div key={i} className="inv-row"><span>{it.nom}</span><span className="inv-poids">{it.poids} kg</span></div>
-              ))
-            )
-          ) : (
-            <>
-              {inv.map((it, i) => (
-                <div key={i} className="edit-row">
-                  <input className="edit-input" style={{ flex: 2 }} placeholder="Nom de l'item" value={it.nom} onChange={(e) => setInv((arr) => arr.map((x, idx) => (idx === i ? { ...x, nom: e.target.value } : x)))} />
-                  <div>
-                    <label className="edit-label">Poids (kg)</label>
-                    <input className="edit-input edit-input-xs" type="number" min={0} step={0.1} value={it.poids} onChange={(e) => setInv((arr) => arr.map((x, idx) => (idx === i ? { ...x, poids: parseFloat(e.target.value) || 0 } : x)))} />
-                  </div>
-                  <button className="btn-del" onClick={() => setInv((arr) => arr.filter((_, idx) => idx !== i))}>x</button>
-                </div>
-              ))}
-              <div className="edit-bar" style={{ marginTop: '0.5rem' }}>
-                <button className="btn-add" onClick={() => setInv((arr) => [...arr, { nom: '', poids: 0 }])}>+ Ajouter item</button>
-                <button className="btn-save" onClick={submitInv}>Valider</button>
-                <button className="btn-cancel" onClick={() => setEditInv(false)}>Annuler</button>
-              </div>
-            </>
+          {inv.length === 0 && (
+            <div style={{ color: 'var(--textdim)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Inventaire vide.</div>
           )}
+
+          {inv.map((it, i) => (
+            <div key={i} className="edit-row">
+              <input
+                className="edit-input"
+                style={{ flex: 2 }}
+                placeholder="Nom de l'item"
+                value={it.nom}
+                onChange={(e) => updateInv(i, { nom: e.target.value })}
+              />
+              <div>
+                <label className="edit-label">Poids (kg)</label>
+                <input
+                  className="edit-input edit-input-xs"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={it.poids}
+                  onChange={(e) => updateInv(i, { poids: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <button className="btn-del" onClick={() => delInv(i)}>x</button>
+            </div>
+          ))}
+
+          <div className="edit-bar" style={{ marginTop: '0.5rem' }}>
+            <button className="btn-add" onClick={addInv}>+ Ajouter item</button>
+          </div>
         </div>
 
         <div className="panel-block">
           <div className="panel-header panel-title-wrap">
             <span className="panel-title" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>Richesses</span>
-            <button className="btn-edit" onClick={() => setEditRich((v) => !v)}>✎ Modifier</button>
           </div>
 
-          {!editRich ? (
-            <div className="richesses-grid">
-              <div className="rbox rbox-pp"><div className="rbox-label">Platine</div><div className="rbox-val">{perso.richesses?.pp || 0}</div></div>
-              <div className="rbox rbox-po"><div className="rbox-label">Or</div><div className="rbox-val">{perso.richesses?.po || 0}</div></div>
-              <div className="rbox rbox-pa"><div className="rbox-label">Argent</div><div className="rbox-val">{perso.richesses?.pa || 0}</div></div>
-              <div className="rbox rbox-pc"><div className="rbox-label">Cuivre</div><div className="rbox-val">{perso.richesses?.pc || 0}</div></div>
-            </div>
-          ) : (
-            <>
-              <div className="richesse-edit-grid">
-                {(['pp', 'po', 'pa', 'pc'] as const).map((k) => (
-                  <div key={k} className="richesse-edit-cell">
-                    <label className="edit-label">{k === 'pp' ? 'Platine' : k === 'po' ? 'Or' : k === 'pa' ? 'Argent' : 'Cuivre'}</label>
-                    <input className="edit-input" type="number" min={0} value={rich[k]} onChange={(e) => setRich({ ...rich, [k]: parseInt(e.target.value) || 0 })} />
-                  </div>
-                ))}
+          <div className="richesse-edit-grid">
+            {(['pp', 'po', 'pa', 'pc'] as const).map((k) => (
+              <div key={k} className="richesse-edit-cell">
+                <label className="edit-label">{k === 'pp' ? 'Platine' : k === 'po' ? 'Or' : k === 'pa' ? 'Argent' : 'Cuivre'}</label>
+                <input
+                  className="edit-input"
+                  type="number"
+                  min={0}
+                  value={rich[k]}
+                  onChange={(e) => setRich(k, parseInt(e.target.value) || 0)}
+                />
               </div>
-              <div className="edit-bar" style={{ marginTop: '0.6rem' }}>
-                <button className="btn-save" onClick={submitRich}>Valider</button>
-                <button className="btn-cancel" onClick={() => setEditRich(false)}>Annuler</button>
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </>
